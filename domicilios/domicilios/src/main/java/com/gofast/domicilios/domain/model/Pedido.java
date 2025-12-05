@@ -3,6 +3,7 @@ package com.gofast.domicilios.domain.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
 public class Pedido {
     private Long id;
     private Long clienteId;
@@ -11,6 +12,8 @@ public class Pedido {
     private EstadoPedido estado;
     private BigDecimal total;
     private LocalDateTime fechaCreacion;
+
+    public Pedido() {}
 
     public Pedido(Long id, LocalDateTime fechaCreacion, BigDecimal total, EstadoPedido estado, Long domiciliarioId, Long direccionId, Long clienteId) {
         this.id = id;

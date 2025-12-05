@@ -2,6 +2,7 @@ package com.gofast.domicilios.infrastructure.persistence.entity;
 
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,17 +14,23 @@ public class PedidoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "cliente_id", nullable = false)
     private Long clienteId;
 
+    @Column(name = "direccion_id", nullable = false)
     private Long direccionId;
 
+    @Column(name = "domiciliario_id")
     private Long domiciliarioId;
 
     @Enumerated(EnumType.STRING)
-    private com.gofast.domicilios.domain.model.EstadoPedido estado;
+    @Column(nullable = false)
+    private EstadoPedido estado;
 
+    @Column(nullable = false)
     private BigDecimal total;
 
+    @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
     public Long getId() {
