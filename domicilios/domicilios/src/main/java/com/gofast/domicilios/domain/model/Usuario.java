@@ -4,15 +4,19 @@ public class Usuario {
     private Long id;
     private String nombre;
     private String email;
-    private String password;
+    private String passwordHash;
     private Rol rol;
+    private boolean activo;
 
-    public Usuario(Long id, String nombre, String email, String password, Rol rol){
+    public Usuario() {}
+
+    public Usuario(Long id, String nombre, String email, String passwordHash, Rol rol, boolean activo){
         this.id = id;
         this.nombre = nombre;
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.rol = rol;
+        this.activo = activo;
     }
 
     public Long getId() {
@@ -23,8 +27,8 @@ public class Usuario {
         return nombre;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public String getEmail() {
@@ -43,8 +47,8 @@ public class Usuario {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String password) {
+        this.passwordHash = password;
     }
 
     public Rol getRol() {
@@ -53,5 +57,13 @@ public class Usuario {
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 }
