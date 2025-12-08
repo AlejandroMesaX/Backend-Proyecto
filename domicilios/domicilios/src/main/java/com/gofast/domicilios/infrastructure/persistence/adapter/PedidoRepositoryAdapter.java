@@ -58,11 +58,20 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
         PedidoEntity e = new PedidoEntity();
         e.setId(p.getId());
         e.setClienteId(p.getClienteId());
-        e.setDireccionId(p.getDireccionId());
         e.setDomiciliarioId(p.getDomiciliarioId());
         e.setEstado(p.getEstado());
-        e.setTotal(p.getTotal());
+        e.setCostoServicio(p.getCostoServicio());
         e.setFechaCreacion(p.getFechaCreacion());
+
+        e.setDireccionRecogida(p.getDireccionRecogida());
+        e.setBarrioRecogida(p.getBarrioRecogida());
+        e.setTelefonoContactoRecogida(p.getTelefonoContactoRecogida());
+
+        e.setDireccionEntrega(p.getDireccionEntrega());
+        e.setBarrioEntrega(p.getBarrioEntrega());
+        e.setNombreQuienRecibe(p.getNombreQuienRecibe());
+        e.setTelefonoQuienRecibe(p.getTelefonoQuienRecibe());
+
         return e;
     }
 
@@ -70,11 +79,19 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
         Pedido p = new Pedido();
         p.setId(e.getId());
         p.setClienteId(e.getClienteId());
-        p.setDireccionId(e.getDireccionId());
         p.setDomiciliarioId(e.getDomiciliarioId());
         p.setEstado(e.getEstado());
-        p.setTotal(e.getTotal());
+        p.setCostoServicio(e.getCostoServicio());
         p.setFechaCreacion(e.getFechaCreacion());
+
+        p.setDireccionRecogida(e.getDireccionRecogida());
+        p.setBarrioRecogida(e.getBarrioRecogida());
+        p.setTelefonoContactoRecogida(e.getTelefonoContactoRecogida());
+
+        p.setDireccionEntrega(e.getDireccionEntrega());
+        p.setBarrioEntrega(e.getBarrioEntrega());
+        p.setNombreQuienRecibe(e.getNombreQuienRecibe());
+        p.setTelefonoQuienRecibe(e.getTelefonoQuienRecibe());
         return p;
     }
 }

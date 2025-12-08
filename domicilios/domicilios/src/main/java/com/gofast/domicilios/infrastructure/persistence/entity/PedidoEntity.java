@@ -17,9 +17,6 @@ public class PedidoEntity {
     @Column(name = "cliente_id", nullable = false)
     private Long clienteId;
 
-    @Column(name = "direccion_id", nullable = false)
-    private Long direccionId;
-
     @Column(name = "domiciliario_id")
     private Long domiciliarioId;
 
@@ -27,11 +24,32 @@ public class PedidoEntity {
     @Column(nullable = false)
     private EstadoPedido estado;
 
-    @Column(nullable = false)
-    private BigDecimal total;
+    @Column(name = "costo_servicio", nullable = false)
+    private BigDecimal costoServicio;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
+
+    @Column(name = "direccion_recogida", nullable = false)
+    private String direccionRecogida;
+
+    @Column(name = "barrio_recogida", nullable = false)
+    private String barrioRecogida;
+
+    @Column(name = "telefono_contacto_recogida", nullable = false)
+    private String telefonoContactoRecogida;
+
+    @Column(name = "direccion_entrega", nullable = false)
+    private String direccionEntrega;
+
+    @Column(name = "barrio_entrega", nullable = false)
+    private String barrioEntrega;
+
+    @Column(name = "nombre_quien_recibe", nullable = false)
+    private String nombreQuienRecibe;
+
+    @Column(name = "telefono_quien_recibe", nullable = false)
+    private String telefonoQuienRecibe;
 
     public Long getId() {
         return id;
@@ -47,14 +65,6 @@ public class PedidoEntity {
 
     public void setClienteId(Long clienteId) {
         this.clienteId = clienteId;
-    }
-
-    public Long getDireccionId() {
-        return direccionId;
-    }
-
-    public void setDireccionId(Long direccionId) {
-        this.direccionId = direccionId;
     }
 
     public Long getDomiciliarioId() {
@@ -73,12 +83,12 @@ public class PedidoEntity {
         this.estado = estado;
     }
 
-    public BigDecimal getTotal() {
-        return total;
+    public BigDecimal getCostoServicio() {
+        return costoServicio;
     }
 
-    public void setTotal(BigDecimal total) {
-        this.total = total;
+    public void setCostoServicio(BigDecimal costoServicio) {
+        this.costoServicio = costoServicio;
     }
 
     public LocalDateTime getFechaCreacion() {
@@ -87,5 +97,61 @@ public class PedidoEntity {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+    public String getDireccionRecogida() {
+        return direccionRecogida;
+    }
+
+    public void setDireccionRecogida(String direccionRecogida) {
+        this.direccionRecogida = direccionRecogida;
+    }
+
+    public String getBarrioRecogida() {
+        return barrioRecogida;
+    }
+
+    public void setBarrioRecogida(String barrioRecogida) {
+        this.barrioRecogida = barrioRecogida;
+    }
+
+    public String getTelefonoContactoRecogida() {
+        return telefonoContactoRecogida;
+    }
+
+    public void setTelefonoContactoRecogida(String telefonoContactoRecogida) {
+        this.telefonoContactoRecogida = telefonoContactoRecogida;
+    }
+
+    public String getDireccionEntrega() {
+        return direccionEntrega;
+    }
+
+    public void setDireccionEntrega(String direccionEntrega) {
+        this.direccionEntrega = direccionEntrega;
+    }
+
+    public String getBarrioEntrega() {
+        return barrioEntrega;
+    }
+
+    public void setBarrioEntrega(String barrioEntrega) {
+        this.barrioEntrega = barrioEntrega;
+    }
+
+    public String getNombreQuienRecibe() {
+        return nombreQuienRecibe;
+    }
+
+    public void setNombreQuienRecibe(String nombreQuienRecibe) {
+        this.nombreQuienRecibe = nombreQuienRecibe;
+    }
+
+    public String getTelefonoQuienRecibe() {
+        return telefonoQuienRecibe;
+    }
+
+    public void setTelefonoQuienRecibe(String telefonoQuienRecibe) {
+        this.telefonoQuienRecibe = telefonoQuienRecibe;
     }
 }

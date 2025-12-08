@@ -34,16 +34,32 @@ public class PedidoService {
 
     // Cliente crea pedido
     public PedidoDTO crearPedidoParaCliente(Long clienteId, CrearPedidoRequest req) {
-        if (req.direccionId == null || req.total == null) {
-            throw new BadRequestException("La dirección y el total son obligatorios");
+        if (req.total == null ||
+                req.direccionRecogida == null || req.direccionRecogida.isBlank() ||
+                req.barrioRecogida == null || req.barrioRecogida.isBlank() ||
+                req.telefonoContactoRecogida == null || req.telefonoContactoRecogida.isBlank() ||
+                req.direccionEntrega == null || req.direccionEntrega.isBlank() ||
+                req.barrioEntrega == null || req.barrioEntrega.isBlank() ||
+                req.nombreQuienRecibe == null || req.nombreQuienRecibe.isBlank() ||
+                req.telefonoQuienRecibe == null || req.telefonoQuienRecibe.isBlank()
+        ) {
+            throw new BadRequestException("Todos los datos de recogida y entrega son obligatorios");
         }
 
         Pedido p = new Pedido();
         p.setClienteId(clienteId);
-        p.setDireccionId(req.direccionId);
         p.setTotal(req.total);
         p.setEstado(EstadoPedido.CREADO);
         p.setFechaCreacion(LocalDateTime.now());
+
+        p.setDireccionRecogida(req.direccionRecogida);
+        p.setBarrioRecogida(req.barrioRecogida);
+        p.setTelefonoContactoRecogida(req.telefonoContactoRecogida);
+
+        p.setDireccionEntrega(req.direccionEntrega);
+        p.setBarrioEntrega(req.barrioEntrega);
+        p.setNombreQuienRecibe(req.nombreQuienRecibe);
+        p.setTelefonoQuienRecibe(req.telefonoQuienRecibe);
 
         Pedido guardado = pedidoRepository.save(p);
         return toDTO(guardado);
@@ -148,11 +164,20 @@ public class PedidoService {
         PedidoDTO dto = new PedidoDTO();
         dto.id = p.getId();
         dto.clienteId = p.getClienteId();
-        dto.direccionId = p.getDireccionId();
         dto.domiciliarioId = p.getDomiciliarioId();
         dto.estado = p.getEstado() != null ? p.getEstado().name() : null;
         dto.total = p.getTotal();
         dto.fechaCreacion = p.getFechaCreacion() != null ? p.getFechaCreacion().toString() : null;
+
+        dto.direccionRecogida = p.getDireccionRecogida();
+        dto.barrioRecogida = p.getBarrioRecogida();
+        dto.telefonoContactoRecogida = p.getTelefonoContactoRecogida();
+
+        dto.direccionEntrega = p.getDireccionEntrega();
+        dto.barrioEntrega = p.getBarrioEntrega();
+        dto.nombreQuienRecibe = p.getNombreQuienRecibe();
+        dto.telefonoQuienRecibe = p.getTelefonoQuienRecibe();
+
         return dto;
     }
 

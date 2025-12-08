@@ -7,23 +7,21 @@ import java.time.LocalDateTime;
 public class Pedido {
     private Long id;
     private Long clienteId;
-    private Long direccionId;
     private Long domiciliarioId;
     private EstadoPedido estado;
-    private BigDecimal total;
+    private BigDecimal costoServicio;
     private LocalDateTime fechaCreacion;
 
-    public Pedido() {}
+    private String direccionRecogida;
+    private String barrioRecogida;
+    private String telefonoContactoRecogida;
 
-    public Pedido(Long id, LocalDateTime fechaCreacion, BigDecimal total, EstadoPedido estado, Long domiciliarioId, Long direccionId, Long clienteId) {
-        this.id = id;
-        this.fechaCreacion = fechaCreacion;
-        this.total = total;
-        this.estado = estado;
-        this.domiciliarioId = domiciliarioId;
-        this.direccionId = direccionId;
-        this.clienteId = clienteId;
-    }
+    private String direccionEntrega;
+    private String barrioEntrega;
+    private String nombreQuienRecibe;
+    private String telefonoQuienRecibe;
+
+    public Pedido() {}
 
     public Long getId() {
         return id;
@@ -49,12 +47,12 @@ public class Pedido {
         this.estado = estado;
     }
 
-    public BigDecimal getTotal() {
-        return total;
+    public BigDecimal getCostoServicio() {
+        return costoServicio;
     }
 
-    public void setTotal(BigDecimal total) {
-        this.total = total;
+    public void setCostoServicio(BigDecimal costoServicio) {
+        this.costoServicio = costoServicio;
     }
 
     public LocalDateTime getFechaCreacion() {
@@ -65,19 +63,67 @@ public class Pedido {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public Long getDireccionId() {
-        return direccionId;
-    }
-
-    public void setDireccionId(Long direccionId) {
-        this.direccionId = direccionId;
-    }
-
     public Long getClienteId() {
         return clienteId;
     }
 
     public void setClienteId(Long clienteId) {
         this.clienteId = clienteId;
+    }
+
+    public String getDireccionRecogida() {
+        return direccionRecogida;
+    }
+
+    public void setDireccionRecogida(String direccionRecogida) {
+        this.direccionRecogida = direccionRecogida;
+    }
+
+    public String getBarrioRecogida() {
+        return barrioRecogida;
+    }
+
+    public void setBarrioRecogida(String barrioRecogida) {
+        this.barrioRecogida = barrioRecogida;
+    }
+
+    public String getTelefonoContactoRecogida() {
+        return telefonoContactoRecogida;
+    }
+
+    public void setTelefonoContactoRecogida(String telefonoContactoRecogida) {
+        this.telefonoContactoRecogida = telefonoContactoRecogida;
+    }
+
+    public String getDireccionEntrega() {
+        return direccionEntrega;
+    }
+
+    public void setDireccionEntrega(String direccionEntrega) {
+        this.direccionEntrega = direccionEntrega;
+    }
+
+    public String getBarrioEntrega() {
+        return barrioEntrega;
+    }
+
+    public void setBarrioEntrega(String barrioEntrega) {
+        this.barrioEntrega = barrioEntrega;
+    }
+
+    public String getNombreQuienRecibe() {
+        return nombreQuienRecibe;
+    }
+
+    public void setNombreQuienRecibe(String nombreQuienRecibe) {
+        this.nombreQuienRecibe = nombreQuienRecibe;
+    }
+
+    public String getTelefonoQuienRecibe() {
+        return telefonoQuienRecibe;
+    }
+
+    public void setTelefonoQuienRecibe(String telefonoQuienRecibe) {
+        this.telefonoQuienRecibe = telefonoQuienRecibe;
     }
 }
