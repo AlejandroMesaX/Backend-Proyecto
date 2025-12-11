@@ -7,6 +7,7 @@ import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
+import com.gofast.domicilios.domain.service.TarifaDomicilioService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,8 +20,8 @@ import java.util.stream.Collectors;
 public class PedidoService {
 
     private final PedidoRepositoryPort pedidoRepository;
+    private final TarifaDomicilioService tarifaDomicilioService;
 
-    // Ejemplo de reglas de transición válidas (puedes extenderlas luego)
     private static final Set<EstadoPedido> PERMITIR_EN_CAMINO_DESDE =
             EnumSet.of(EstadoPedido.ASIGNADO);
     private static final Set<EstadoPedido> PERMITIR_ENTREGADO_DESDE =
@@ -28,27 +29,31 @@ public class PedidoService {
     private static final Set<EstadoPedido> PERMITIR_CANCELADO_DESDE =
             EnumSet.of(EstadoPedido.CREADO, EstadoPedido.ASIGNADO);
 
-    public PedidoService(PedidoRepositoryPort pedidoRepository) {
+    public PedidoService(PedidoRepositoryPort pedidoRepository,
+                         TarifaDomicilioService tarifaDomicilioService) {
         this.pedidoRepository = pedidoRepository;
+        this.tarifaDomicilioService = tarifaDomicilioService;
     }
 
     // Cliente crea pedido
     public PedidoDTO crearPedidoParaCliente(Long clienteId, CrearPedidoRequest req) {
-        if (req.total == null ||
-                req.direccionRecogida == null || req.direccionRecogida.isBlank() ||
+        if (req.direccionRecogida == null || req.direccionRecogida.isBlank() ||
                 req.barrioRecogida == null || req.barrioRecogida.isBlank() ||
                 req.telefonoContactoRecogida == null || req.telefonoContactoRecogida.isBlank() ||
                 req.direccionEntrega == null || req.direccionEntrega.isBlank() ||
                 req.barrioEntrega == null || req.barrioEntrega.isBlank() ||
                 req.nombreQuienRecibe == null || req.nombreQuienRecibe.isBlank() ||
-                req.telefonoQuienRecibe == null || req.telefonoQuienRecibe.isBlank()
-        ) {
+                req.telefonoQuienRecibe == null || req.telefonoQuienRecibe.isBlank()) {
             throw new BadRequestException("Todos los datos de recogida y entrega son obligatorios");
         }
 
+        var costo = tarifaDomicilioService.calcularCosto(
+                req.barrioRecogida,
+                req.barrioEntrega
+        );
+
         Pedido p = new Pedido();
         p.setClienteId(clienteId);
-        p.setTotal(req.total);
         p.setEstado(EstadoPedido.CREADO);
         p.setFechaCreacion(LocalDateTime.now());
 
@@ -60,6 +65,8 @@ public class PedidoService {
         p.setBarrioEntrega(req.barrioEntrega);
         p.setNombreQuienRecibe(req.nombreQuienRecibe);
         p.setTelefonoQuienRecibe(req.telefonoQuienRecibe);
+
+        p.setCostoServicio(costo);
 
         Pedido guardado = pedidoRepository.save(p);
         return toDTO(guardado);
@@ -166,7 +173,7 @@ public class PedidoService {
         dto.clienteId = p.getClienteId();
         dto.domiciliarioId = p.getDomiciliarioId();
         dto.estado = p.getEstado() != null ? p.getEstado().name() : null;
-        dto.total = p.getTotal();
+        dto.costoServicio = p.getCostoServicio();
         dto.fechaCreacion = p.getFechaCreacion() != null ? p.getFechaCreacion().toString() : null;
 
         dto.direccionRecogida = p.getDireccionRecogida();
