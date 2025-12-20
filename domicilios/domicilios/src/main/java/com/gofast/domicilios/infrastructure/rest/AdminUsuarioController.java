@@ -42,4 +42,9 @@ public class AdminUsuarioController {
         usuarioService.reactivarUsuario(usuarioId);
         return ResponseEntity.noContent().build(); // 204
     }
+
+    @GetMapping("/{usuarioId}")
+    public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(usuarioService.obtenerUsuarioPorId(usuarioId));
+    }
 }

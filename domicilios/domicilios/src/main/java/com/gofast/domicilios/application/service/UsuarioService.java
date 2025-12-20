@@ -69,6 +69,13 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public UsuarioDTO obtenerUsuarioPorId(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
+        return toDTO(usuario);
+    }
+
     public UsuarioDTO toDTO(Usuario u) {
         UsuarioDTO dto = new UsuarioDTO();
         dto.id = u.getId();
