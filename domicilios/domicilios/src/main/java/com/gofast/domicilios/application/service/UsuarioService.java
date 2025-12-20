@@ -4,6 +4,7 @@ import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.model.Usuario;
+import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,14 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return toDTO(usuario);
+    }
+
+    public void desactivarUsuario(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
+        usuario.setActivo(false);
+        usuarioRepository.save(usuario);
     }
 
     public List<UsuarioDTO> listarUsuarios() {

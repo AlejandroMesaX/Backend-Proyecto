@@ -30,4 +30,10 @@ public class AdminUsuarioController {
         UsuarioDTO creado = usuarioService.registrarUsuario(req);
         return ResponseEntity.ok(creado);
     }
+
+    @DeleteMapping("/{usuarioId}")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long usuarioId) {
+        usuarioService.desactivarUsuario(usuarioId);
+        return ResponseEntity.noContent().build(); // 204
+    }
 }

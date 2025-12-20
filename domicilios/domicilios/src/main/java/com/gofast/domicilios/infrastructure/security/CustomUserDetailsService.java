@@ -2,6 +2,7 @@ package com.gofast.domicilios.infrastructure.security;
 
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +21,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+
+        if (!usuario.isActivo()) {
+            throw new DisabledException("Usuario desactivado");
+        }
 
         return new CustomUserDetails(usuario);
     }

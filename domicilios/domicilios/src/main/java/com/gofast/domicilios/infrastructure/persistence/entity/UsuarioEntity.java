@@ -21,6 +21,7 @@ public class UsuarioEntity {
     @Enumerated(EnumType.STRING)
     private Rol rol;
 
+    @Column(nullable = false)
     private boolean activo = true;
 
     public Long getId() {
