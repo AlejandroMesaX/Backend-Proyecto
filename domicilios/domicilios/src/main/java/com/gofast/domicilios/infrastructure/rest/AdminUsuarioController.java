@@ -47,4 +47,16 @@ public class AdminUsuarioController {
     public ResponseEntity<UsuarioDTO> obtenerUsuario(@PathVariable Long usuarioId) {
         return ResponseEntity.ok(usuarioService.obtenerUsuarioPorId(usuarioId));
     }
+
+    @GetMapping("/buscar/nombre")
+    public ResponseEntity<List<UsuarioDTO>> buscarPorNombre(@RequestParam String nombre) {
+        return ResponseEntity.ok(usuarioService.buscarPorNombre(nombre));
+    }
+
+    // 🔎 Buscar usuarios por rol (ADMIN)
+// Ej: GET /api/admin/usuarios/buscar/rol?rol=CLIENT
+    @GetMapping("/buscar/rol")
+    public ResponseEntity<List<UsuarioDTO>> buscarPorRol(@RequestParam String rol) {
+        return ResponseEntity.ok(usuarioService.buscarPorRol(rol));
+    }
 }

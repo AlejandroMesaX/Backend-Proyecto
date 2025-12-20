@@ -13,6 +13,10 @@ public interface UsuarioRepositoryPort {
 
     List<Usuario> findAll();
 
+    List<Usuario> findByNombreContains(String nombre);
+
+    List<Usuario> findByRol(String rol);
+
     void deleteById(Long id);
 
 }

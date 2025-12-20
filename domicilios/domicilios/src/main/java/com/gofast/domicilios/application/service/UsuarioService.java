@@ -8,7 +8,7 @@ import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.gofast.domicilios.application.exception.BadRequestException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +74,30 @@ public class UsuarioService {
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
 
         return toDTO(usuario);
+    }
+
+    public List<UsuarioDTO> buscarPorNombre(String nombre) {
+        if (nombre == null || nombre.isBlank()) {
+            throw new BadRequestException("El parámetro 'nombre' es obligatorio");
+        }
+
+        return usuarioRepository.findByNombreContains(nombre)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // ✅ BUSCAR POR ROL (ADMIN)
+    public List<UsuarioDTO> buscarPorRol(String rol) {
+        if (rol == null || rol.isBlank()) {
+            throw new BadRequestException("El parámetro 'rol' es obligatorio");
+        }
+
+        // aquí el adapter valida el rol y lanza error si es inválido
+        return usuarioRepository.findByRol(rol)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     public UsuarioDTO toDTO(Usuario u) {

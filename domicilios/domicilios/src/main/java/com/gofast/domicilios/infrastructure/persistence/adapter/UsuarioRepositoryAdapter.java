@@ -6,6 +6,7 @@ import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import org.springframework.stereotype.Component;
 
+import com.gofast.domicilios.domain.model.Rol;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,6 +47,29 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
     @Override
     public void deleteById(Long id) {
         jpa.deleteById(id);
+    }
+
+    @Override
+    public List<Usuario> findByNombreContains(String nombre) {
+        return jpa.findByNombreContainingIgnoreCase(nombre)
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Usuario> findByRol(String rol) {
+        Rol rolEnum;
+        try {
+            rolEnum = Rol.valueOf(rol.toUpperCase());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Rol inválido: " + rol + ". Use ADMIN, CLIENT o DELIVERY.");
+        }
+
+        return jpa.findByRol(rolEnum)
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
 
     private UsuarioEntity toEntity(Usuario u) {
