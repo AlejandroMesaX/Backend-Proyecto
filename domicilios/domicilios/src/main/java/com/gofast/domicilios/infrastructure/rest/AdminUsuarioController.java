@@ -36,4 +36,10 @@ public class AdminUsuarioController {
         usuarioService.desactivarUsuario(usuarioId);
         return ResponseEntity.noContent().build(); // 204
     }
+
+    @PatchMapping("/{usuarioId}/reactivar")
+    public ResponseEntity<Void> reactivarUsuario(@PathVariable Long usuarioId) {
+        usuarioService.reactivarUsuario(usuarioId);
+        return ResponseEntity.noContent().build(); // 204
+    }
 }

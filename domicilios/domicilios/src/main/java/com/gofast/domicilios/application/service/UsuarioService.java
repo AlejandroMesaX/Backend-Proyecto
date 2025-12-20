@@ -54,6 +54,14 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    public void reactivarUsuario(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
+        usuario.setActivo(true);
+        usuarioRepository.save(usuario);
+    }
+
     public List<UsuarioDTO> listarUsuarios() {
         return usuarioRepository.findAll()
                 .stream()
