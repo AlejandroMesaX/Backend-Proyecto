@@ -38,7 +38,7 @@ public class AdminPedidoController {
             @PathVariable Long pedidoId,
             @RequestBody ActualizarEstadoPedidoRequest req
     ) {
-        // actorId puede ser null, no se usa si esAdmin = true
+
         PedidoDTO actualizado = pedidoService.actualizarEstado(pedidoId, req.estado, null, true);
         return ResponseEntity.ok(actualizado);
     }

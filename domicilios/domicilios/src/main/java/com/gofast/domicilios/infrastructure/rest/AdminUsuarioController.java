@@ -18,13 +18,13 @@ public class AdminUsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    // Listar todos los usuarios
+
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
 
-    // Crear un usuario (por ejemplo un domiciliario o admin nuevo)
+
     @PostMapping
     public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody RegisterUsuarioRequest req) {
         UsuarioDTO creado = usuarioService.registrarUsuario(req);

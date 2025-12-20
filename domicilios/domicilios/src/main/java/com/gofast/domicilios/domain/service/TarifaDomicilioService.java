@@ -21,7 +21,6 @@ public class TarifaDomicilioService {
     }
 
     public BigDecimal calcularCosto(String barrioRecogidaNombre, String barrioEntregaNombre) {
-        // 1. Encontrar barrios
         Barrio origen = barrioRepository.findByNombre(barrioRecogidaNombre)
                 .orElseThrow(() -> new BadRequestException("Barrio de recogida no encontrado: " + barrioRecogidaNombre));
 
@@ -32,7 +31,7 @@ public class TarifaDomicilioService {
             throw new BadRequestException("Los barrios deben tener comuna asociada");
         }
 
-        // 2. Buscar comunas
+
         Comuna comunaOrigen = comunaRepository.findByNumero(origen.getComuna())
                 .orElseThrow(() -> new BadRequestException("Comuna de origen no encontrada: " + origen.getComuna()));
 
@@ -41,10 +40,10 @@ public class TarifaDomicilioService {
 
         int diferencia = Math.abs(comunaOrigen.getNumero() - comunaDestino.getNumero());
 
-        // 3. Regla de negocio: base = max(tarifas de ambas comunas)
+
         BigDecimal base = comunaOrigen.getTarifaBase().max(comunaDestino.getTarifaBase());
 
-        // 4. Recargo: usamos el mayor recargo de las dos comunas
+
         BigDecimal recargoPorSalto = comunaOrigen.getRecargoPorSalto().max(comunaDestino.getRecargoPorSalto());
         BigDecimal recargo = recargoPorSalto.multiply(BigDecimal.valueOf(diferencia));
 

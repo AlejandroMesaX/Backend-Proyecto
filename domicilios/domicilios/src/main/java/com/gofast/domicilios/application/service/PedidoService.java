@@ -93,7 +93,7 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
-    // Admin asigna domiciliario
+
     public PedidoDTO asignarDomiciliario(Long pedidoId, Long domiciliarioId) {
         if (domiciliarioId == null) {
             throw new BadRequestException("El domiciliarioId es obligatorio");
@@ -102,7 +102,7 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
-        // (opcional) ejemplo de validación de estado
+
         if (pedido.getEstado() != EstadoPedido.CREADO && pedido.getEstado() != EstadoPedido.ASIGNADO) {
             throw new BadRequestException("Solo se pueden asignar pedidos en estado CREADO o ASIGNADO");
         }
@@ -113,7 +113,7 @@ public class PedidoService {
         return toDTO(actualizado);
     }
 
-    // Actualizar estado con validación de propietario y de transición
+
     public PedidoDTO actualizarEstado(Long pedidoId, String estadoStr, Long actorId, boolean esAdmin) {
         if (estadoStr == null || estadoStr.isBlank()) {
             throw new BadRequestException("El estado es obligatorio");
@@ -129,7 +129,7 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
-        // Si no es admin, es domiciliario → validar dueño
+
         if (!esAdmin) {
             if (pedido.getDomiciliarioId() == null ||
                     !pedido.getDomiciliarioId().equals(actorId)) {
@@ -137,7 +137,7 @@ public class PedidoService {
             }
         }
 
-        // Validar transición según estado actual
+
         validarTransicionEstado(pedido.getEstado(), nuevoEstado, esAdmin);
 
         pedido.setEstado(nuevoEstado);
@@ -146,12 +146,10 @@ public class PedidoService {
     }
 
     private void validarTransicionEstado(EstadoPedido actual, EstadoPedido nuevo, boolean esAdmin) {
-        // Admin puede hacer lo que quiera (si no quieres esto, bórralo)
         if (esAdmin) {
             return;
         }
 
-        // Reglas para domiciliario
         if (nuevo == EstadoPedido.EN_CAMINO && !PERMITIR_EN_CAMINO_DESDE.contains(actual)) {
             throw new BadRequestException("Solo se puede pasar a EN_CAMINO desde ASIGNADO");
         }
@@ -164,7 +162,7 @@ public class PedidoService {
             throw new BadRequestException("No se puede cancelar un pedido en el estado actual: " + actual);
         }
 
-        // Si quisieras impedir otras transiciones raras, puedes validarlas aquí
+
     }
 
     public PedidoDTO toDTO(Pedido p) {
@@ -188,17 +186,16 @@ public class PedidoService {
         return dto;
     }
 
-    // Cliente puede cancelar pedido
     public PedidoDTO cancelarPedidoPorCliente(Long pedidoId, Long clienteId) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
-        // Validar que sea dueño
+
         if (!pedido.getClienteId().equals(clienteId)) {
             throw new ForbiddenException("No puedes cancelar pedidos de otros clientes");
         }
 
-        // Validar estado cancelable
+
         if (!(pedido.getEstado() == EstadoPedido.CREADO ||
                 pedido.getEstado() == EstadoPedido.ASIGNADO)) {
             throw new BadRequestException("Solo puedes cancelar pedidos en estado CREADO o ASIGNADO");

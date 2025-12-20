@@ -36,7 +36,6 @@ public class DeliveryPedidoController {
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         Long domiciliarioId = currentUser.getId();
-        // esAdmin = false para domiciliario
         PedidoDTO actualizado = pedidoService.actualizarEstado(pedidoId, req.estado, domiciliarioId, false);
         return ResponseEntity.ok(actualizado);
     }

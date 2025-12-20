@@ -28,7 +28,7 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
         barrio.setNombre(entity.getNombre());
 
         if (entity.getComuna() != null) {
-            barrio.setComuna(entity.getComuna().getNumero()); // usamos el número de comuna
+            barrio.setComuna(entity.getComuna().getNumero());
         }
 
         return barrio;

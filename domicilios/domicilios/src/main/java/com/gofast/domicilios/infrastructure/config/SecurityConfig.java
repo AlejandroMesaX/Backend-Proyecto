@@ -28,19 +28,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Público
+
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Rutas por rol
+
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/delivery/**").hasRole("DELIVERY")
                         .requestMatchers("/api/cliente/**").hasRole("CLIENT")
 
-                        // Cualquier otra: autenticado
+
                         .anyRequest().authenticated()
                 );
 
-        // Filtro JWT antes del filtro estándar de login por usuario/contraseña
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -54,7 +53,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Para encriptar password de Usuario
         return new BCryptPasswordEncoder();
     }
 }
