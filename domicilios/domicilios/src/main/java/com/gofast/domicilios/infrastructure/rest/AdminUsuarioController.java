@@ -5,6 +5,8 @@ import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.application.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
 
 import java.util.List;
 
@@ -32,8 +34,11 @@ public class AdminUsuarioController {
     }
 
     @DeleteMapping("/{usuarioId}")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long usuarioId) {
-        usuarioService.desactivarUsuario(usuarioId);
+    public ResponseEntity<Void> eliminarUsuario(
+            @PathVariable Long usuarioId,
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        usuarioService.desactivarUsuario(usuarioId, currentUser.getId());
         return ResponseEntity.noContent().build(); // 204
     }
 

@@ -46,7 +46,11 @@ public class UsuarioService {
         return toDTO(usuario);
     }
 
-    public void desactivarUsuario(Long usuarioId) {
+    public void desactivarUsuario(Long usuarioId, Long adminId) {
+        if (adminId != null && adminId.equals(usuarioId)) {
+            throw new BadRequestException("No puedes desactivar tu propio usuario (admin).");
+        }
+
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
 
