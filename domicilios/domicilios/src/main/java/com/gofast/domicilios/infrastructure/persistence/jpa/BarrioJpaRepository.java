@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface BarrioJpaRepository extends JpaRepository<BarrioEntity, Long> {
     Optional<BarrioEntity> findByNombre(String nombre);
+    boolean existsByNombreIgnoreCase(String nombre);
 }
