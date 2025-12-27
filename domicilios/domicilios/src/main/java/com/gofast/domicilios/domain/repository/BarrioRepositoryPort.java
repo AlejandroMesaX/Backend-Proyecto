@@ -13,6 +13,8 @@ public interface BarrioRepositoryPort {
 
     boolean existsActivoByNombre(String nombre);
 
+    Optional<Barrio> findActivoByNombre(String nombre);
+
     // ✅ listar activos / listar todos
     List<Barrio> findAllActivos();
     List<Barrio> findAll();

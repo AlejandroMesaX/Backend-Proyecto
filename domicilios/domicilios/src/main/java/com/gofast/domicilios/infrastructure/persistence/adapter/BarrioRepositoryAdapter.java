@@ -55,6 +55,13 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
     }
 
     @Override
+    public Optional<Barrio> findActivoByNombre(String nombre) {
+        return barrioJpaRepository.findByNombreIgnoreCaseAndActivoTrue(nombre)
+                .map(this::toDomain);
+    }
+
+
+    @Override
     public List<Barrio> findAllActivos() {
         return barrioJpaRepository.findAllByActivoTrue()
                 .stream().map(this::toDomain).collect(Collectors.toList());

@@ -11,6 +11,8 @@ public interface BarrioJpaRepository extends JpaRepository<BarrioEntity, Long> {
 
     boolean existsByNombreIgnoreCaseAndActivoTrue(String nombre);
 
+    Optional<BarrioEntity> findByNombreIgnoreCaseAndActivoTrue(String nombre);
+
     // ✅ Listar solo activos
     List<BarrioEntity> findAllByActivoTrue();
 

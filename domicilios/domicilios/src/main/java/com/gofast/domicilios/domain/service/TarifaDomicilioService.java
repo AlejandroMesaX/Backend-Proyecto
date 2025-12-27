@@ -21,11 +21,12 @@ public class TarifaDomicilioService {
     }
 
     public BigDecimal calcularCosto(String barrioRecogidaNombre, String barrioEntregaNombre) {
-        Barrio origen = barrioRepository.findByNombre(barrioRecogidaNombre)
-                .orElseThrow(() -> new BadRequestException("Barrio de recogida no encontrado: " + barrioRecogidaNombre));
+        Barrio origen = barrioRepository.findActivoByNombre(barrioRecogidaNombre)
+                .orElseThrow(() -> new BadRequestException("Barrio de recogida no encontrado o inactivo: " + barrioRecogidaNombre));
 
-        Barrio destino = barrioRepository.findByNombre(barrioEntregaNombre)
-                .orElseThrow(() -> new BadRequestException("Barrio de entrega no encontrado: " + barrioEntregaNombre));
+        Barrio destino = barrioRepository.findActivoByNombre(barrioEntregaNombre)
+                .orElseThrow(() -> new BadRequestException("Barrio de entrega no encontrado o inactivo: " + barrioEntregaNombre));
+
 
         if (origen.getComuna() == null || destino.getComuna() == null) {
             throw new BadRequestException("Los barrios deben tener comuna asociada");
