@@ -4,9 +4,18 @@ public class Barrio {
     private Long id;
     private String nombre;
     private Integer comuna;
+    private boolean activo = true;
 
     public Integer getComuna() {
         return comuna;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public void setComuna(Integer comuna) {

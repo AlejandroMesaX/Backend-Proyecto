@@ -16,6 +16,9 @@ public class BarrioEntity {
     @JoinColumn(name = "comuna_id", nullable = false)
     private ComunaEntity comuna;
 
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;
+
     public Long getId() {
         return id;
     }
@@ -39,4 +42,11 @@ public class BarrioEntity {
     public void setComuna(ComunaEntity comuna) {
         this.comuna = comuna;
     }
+
+    public boolean isActivo() {
+        return activo; }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo; }
+
 }
