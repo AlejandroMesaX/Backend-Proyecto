@@ -1,5 +1,6 @@
 package com.gofast.domicilios.domain.repository;
 
+import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.model.Usuario;
 import java.util.List;
 import java.util.Optional;
@@ -13,9 +14,7 @@ public interface UsuarioRepositoryPort {
 
     List<Usuario> findAll();
 
-    List<Usuario> findByNombreContains(String nombre);
-
-    List<Usuario> findByRol(String rol);
+    List<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo);
 
     void deleteById(Long id);
 

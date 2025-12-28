@@ -5,7 +5,7 @@ import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import org.springframework.stereotype.Component;
-
+import org.springframework.data.jpa.domain.Specification;
 import com.gofast.domicilios.domain.model.Rol;
 import java.util.List;
 import java.util.Optional;
@@ -49,24 +49,35 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         jpa.deleteById(id);
     }
 
-    @Override
-    public List<Usuario> findByNombreContains(String nombre) {
-        return jpa.findByNombreContainingIgnoreCase(nombre)
-                .stream()
-                .map(this::toDomain)
-                .collect(Collectors.toList());
-    }
 
     @Override
-    public List<Usuario> findByRol(String rol) {
-        Rol rolEnum;
-        try {
-            rolEnum = Rol.valueOf(rol.toUpperCase());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Rol inválido: " + rol + ". Use ADMIN, CLIENT o DELIVERY.");
+    public List<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo) {
+
+        Specification<UsuarioEntity> spec =
+                (root, query, cb) -> cb.conjunction();
+
+        if (nombre != null && !nombre.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(
+                            cb.lower(root.get("nombre")),
+                            "%" + nombre.toLowerCase() + "%"
+                    )
+            );
         }
 
-        return jpa.findByRol(rolEnum)
+        if (rol != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("rol"), rol)
+            );
+        }
+
+        if (activo != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("activo"), activo)
+            );
+        }
+
+        return jpa.findAll(spec)
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
