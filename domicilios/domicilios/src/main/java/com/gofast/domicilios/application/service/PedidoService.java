@@ -12,6 +12,7 @@ import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
 
 import java.time.LocalDateTime;
 import java.util.EnumSet;
@@ -140,6 +141,78 @@ public class PedidoService {
 
         Pedido saved = pedidoRepository.save(pedido);
         return toDTO(saved); // tu mapper exacto (el que ya tienes)
+    }
+
+    private Usuario usuarioDesdeAuth(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new ForbiddenException("No autenticado");
+        }
+        String email = authentication.getName(); // normalmente es el username/email
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ForbiddenException("Usuario no encontrado en el token"));
+    }
+
+    public List<PedidoDTO> listarPedidosDelDomiciliario(Authentication authentication, EstadoPedido estado) {
+
+        Usuario u = usuarioDesdeAuth(authentication);
+
+        if (u.getRol() != Rol.DELIVERY) {
+            throw new ForbiddenException("Solo domiciliarios pueden ver esta ruta");
+        }
+        if (!u.isActivo()) {
+            throw new ForbiddenException("Usuario inactivo");
+        }
+
+        List<Pedido> pedidos = pedidoRepository.findByDomiciliarioIdYEstado(u.getId(), estado);
+
+        return pedidos.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public PedidoDTO cambiarEstadoComoDomiciliario(
+            Authentication authentication,
+            Long pedidoId,
+            ActualizarEstadoPedidoRequest req
+    ) {
+        if (req == null || req.estado == null || req.estado.isBlank()) {
+            throw new BadRequestException("estado es obligatorio");
+        }
+
+        Usuario u = usuarioDesdeAuth(authentication);
+
+        if (u.getRol() != Rol.DELIVERY) {
+            throw new ForbiddenException("Solo domiciliarios pueden cambiar estado");
+        }
+        if (!u.isActivo()) {
+            throw new ForbiddenException("Usuario inactivo");
+        }
+
+        EstadoPedido nuevoEstado;
+        try {
+            nuevoEstado = EstadoPedido.valueOf(req.estado.trim().toUpperCase());
+        } catch (Exception e) {
+            throw new BadRequestException("Estado inválido: " + req.estado);
+        }
+
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
+
+        // ✅ seguridad: solo si el pedido está asignado a mí
+        if (pedido.getDomiciliarioId() == null || !pedido.getDomiciliarioId().equals(u.getId())) {
+            throw new ForbiddenException("No puedes modificar un pedido que no está asignado a ti");
+        }
+
+        // ✅ regla simple de transición (ajusta si quieres)
+        if (pedido.getEstado() == EstadoPedido.ASIGNADO && nuevoEstado == EstadoPedido.EN_CAMINO) {
+            pedido.setEstado(nuevoEstado);
+        } else if (pedido.getEstado() == EstadoPedido.EN_CAMINO && nuevoEstado == EstadoPedido.ENTREGADO) {
+            pedido.setEstado(nuevoEstado);
+        } else {
+            throw new BadRequestException("Transición de estado no permitida: " +
+                    pedido.getEstado().name() + " -> " + nuevoEstado.name());
+        }
+
+        Pedido saved = pedidoRepository.save(pedido);
+        return toDTO(saved);
     }
 
 

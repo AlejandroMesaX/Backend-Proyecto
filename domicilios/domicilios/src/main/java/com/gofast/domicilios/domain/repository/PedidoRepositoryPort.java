@@ -1,5 +1,6 @@
 package com.gofast.domicilios.domain.repository;
 
+import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public interface PedidoRepositoryPort {
     List<Pedido> findByDomiciliarioId(Long domiciliarioId);
 
     List<Pedido> findByFiltros(Long clienteId, Long domiciliarioId);
+
+    List<Pedido> findByDomiciliarioIdYEstado(Long domiciliarioId, EstadoPedido estado);
 
     List<Pedido> findAll();
 

@@ -1,5 +1,6 @@
 package com.gofast.domicilios.infrastructure.persistence.adapter;
 
+import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
@@ -42,6 +43,27 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
     @Override
     public List<Pedido> findByDomiciliarioId(Long domiciliarioId) {
         return jpa.findByDomiciliarioId(domiciliarioId)
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Pedido> findByDomiciliarioIdYEstado(Long domiciliarioId, EstadoPedido estado) {
+
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
+
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("domiciliarioId"), domiciliarioId)
+        );
+
+        if (estado != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("estado"), estado)
+            );
+        }
+
+        return jpa.findAll(spec)
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
