@@ -14,6 +14,8 @@ public interface PedidoRepositoryPort {
 
     List<Pedido> findByDomiciliarioId(Long domiciliarioId);
 
+    List<Pedido> findByFiltros(Long clienteId, Long domiciliarioId);
+
     List<Pedido> findAll();
 
 }

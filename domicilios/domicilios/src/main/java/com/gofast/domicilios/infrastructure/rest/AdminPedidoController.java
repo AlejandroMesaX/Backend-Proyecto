@@ -20,18 +20,20 @@ public class AdminPedidoController {
         }
 
         @GetMapping
-        public ResponseEntity<List<PedidoDTO>> listarTodos() {
-            return ResponseEntity.ok(pedidoService.listarTodos());
+        public ResponseEntity<List<PedidoDTO>> listar(
+            @RequestParam(required = false) Long clienteId,
+            @RequestParam(required = false) Long domiciliarioId
+        ) {
+        return ResponseEntity.ok(pedidoService.listarPedidos(clienteId, domiciliarioId));
         }
 
-        @PostMapping("/{pedidoId}/asignar")
-        public ResponseEntity<PedidoDTO> asignarDomiciliario(
-                @PathVariable Long pedidoId,
-                @RequestBody AsignarDomiciliarioRequest req
-        ) {
-            PedidoDTO actualizado = pedidoService.asignarDomiciliario(pedidoId, req.domiciliarioId);
-            return ResponseEntity.ok(actualizado);
-        }
+    @PatchMapping("/{pedidoId}/asignar")
+    public ResponseEntity<PedidoDTO> asignar(
+            @PathVariable Long pedidoId,
+            @RequestBody AsignarDomiciliarioRequest req
+    ) {
+        return ResponseEntity.ok(pedidoService.asignarPedido(pedidoId, req));
+    }
 
     @PostMapping("/{pedidoId}/estado")
     public ResponseEntity<PedidoDTO> actualizarEstadoAdmin(

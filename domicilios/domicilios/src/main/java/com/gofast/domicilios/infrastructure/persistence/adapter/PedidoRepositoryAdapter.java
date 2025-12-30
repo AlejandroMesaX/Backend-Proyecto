@@ -4,6 +4,7 @@ import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.PedidoJpaRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -49,6 +50,29 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
     @Override
     public List<Pedido> findAll() {
         return jpa.findAll()
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Pedido> findByFiltros(Long clienteId, Long domiciliarioId) {
+
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
+
+        if (clienteId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("clienteId"), clienteId)
+            );
+        }
+
+        if (domiciliarioId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("domiciliarioId"), domiciliarioId)
+            );
+        }
+
+        return jpa.findAll(spec)
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());

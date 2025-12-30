@@ -6,7 +6,10 @@ import com.gofast.domicilios.application.exception.ForbiddenException;
 import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
+import com.gofast.domicilios.domain.model.Usuario;
+import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
+import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,7 @@ public class PedidoService {
 
     private final PedidoRepositoryPort pedidoRepository;
     private final TarifaDomicilioService tarifaDomicilioService;
+    private final UsuarioRepositoryPort usuarioRepository;
 
     private static final Set<EstadoPedido> PERMITIR_EN_CAMINO_DESDE =
             EnumSet.of(EstadoPedido.ASIGNADO);
@@ -30,9 +34,11 @@ public class PedidoService {
             EnumSet.of(EstadoPedido.CREADO, EstadoPedido.ASIGNADO);
 
     public PedidoService(PedidoRepositoryPort pedidoRepository,
-                         TarifaDomicilioService tarifaDomicilioService) {
+                         TarifaDomicilioService tarifaDomicilioService,
+                         UsuarioRepositoryPort usuarioRepository) {
         this.pedidoRepository = pedidoRepository;
         this.tarifaDomicilioService = tarifaDomicilioService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // Cliente crea pedido
@@ -86,31 +92,54 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
-    public List<PedidoDTO> listarTodos() {
-        return pedidoRepository.findAll()
+    public List<PedidoDTO> listarPedidos(Long clienteId, Long domiciliarioId) {
+        return pedidoRepository.findByFiltros(clienteId, domiciliarioId)
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
 
-    public PedidoDTO asignarDomiciliario(Long pedidoId, Long domiciliarioId) {
-        if (domiciliarioId == null) {
-            throw new BadRequestException("El domiciliarioId es obligatorio");
+    public PedidoDTO asignarPedido(Long pedidoId, AsignarDomiciliarioRequest req) {
+
+        if (req == null || req.domiciliarioId == null) {
+            throw new BadRequestException("domiciliarioId es obligatorio");
         }
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
+        // Validar domiciliario
+        Usuario domi = usuarioRepository.findById(req.domiciliarioId)
+                .orElseThrow(() -> new NotFoundException("Domiciliario no encontrado"));
 
-        if (pedido.getEstado() != EstadoPedido.CREADO && pedido.getEstado() != EstadoPedido.ASIGNADO) {
-            throw new BadRequestException("Solo se pueden asignar pedidos en estado CREADO o ASIGNADO");
+        // ✅ rol correcto
+        if (domi.getRol() != Rol.DELIVERY) { // o el nombre que uses para domiciliario
+            throw new BadRequestException("El usuario no tiene rol DOMICILIARIO/DELIVERY");
         }
 
-        pedido.setDomiciliarioId(domiciliarioId);
+        // ✅ activo (si manejas activo en usuario)
+        if (!domi.isActivo()) {
+            throw new BadRequestException("No se puede asignar a un domiciliario inactivo");
+        }
+
+        // (Opcional) regla de negocio: solo asignar si está pendiente
+        // Si tu estado es String:
+        if (pedido.getEstado() != EstadoPedido.CREADO
+                && pedido.getEstado() != EstadoPedido.ASIGNADO
+                && pedido.getEstado() != EstadoPedido.EN_CAMINO) {
+            throw new BadRequestException(
+                    "Solo se puede asignar un pedido en estado CREADO,ASIGNADO o EN_CAMINO"
+            );
+        }
+
+        pedido.setDomiciliarioId(req.domiciliarioId);
+
+        // (Opcional) cambiar estado
         pedido.setEstado(EstadoPedido.ASIGNADO);
-        Pedido actualizado = pedidoRepository.save(pedido);
-        return toDTO(actualizado);
+
+        Pedido saved = pedidoRepository.save(pedido);
+        return toDTO(saved); // tu mapper exacto (el que ya tienes)
     }
 
 
@@ -165,14 +194,19 @@ public class PedidoService {
 
     }
 
-    public PedidoDTO toDTO(Pedido p) {
+    private PedidoDTO toDTO(Pedido p) {
+
         PedidoDTO dto = new PedidoDTO();
+
         dto.id = p.getId();
         dto.clienteId = p.getClienteId();
         dto.domiciliarioId = p.getDomiciliarioId();
-        dto.estado = p.getEstado() != null ? p.getEstado().name() : null;
+
+        dto.estado = p.getEstado().name(); // si es enum
         dto.costoServicio = p.getCostoServicio();
-        dto.fechaCreacion = p.getFechaCreacion() != null ? p.getFechaCreacion().toString() : null;
+        dto.fechaCreacion = p.getFechaCreacion() != null
+                ? p.getFechaCreacion().toString()
+                : null;
 
         dto.direccionRecogida = p.getDireccionRecogida();
         dto.barrioRecogida = p.getBarrioRecogida();
