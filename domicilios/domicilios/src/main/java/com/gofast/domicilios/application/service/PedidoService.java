@@ -215,38 +215,6 @@ public class PedidoService {
         return toDTO(saved);
     }
 
-
-    public PedidoDTO actualizarEstado(Long pedidoId, String estadoStr, Long actorId, boolean esAdmin) {
-        if (estadoStr == null || estadoStr.isBlank()) {
-            throw new BadRequestException("El estado es obligatorio");
-        }
-
-        EstadoPedido nuevoEstado;
-        try {
-            nuevoEstado = EstadoPedido.valueOf(estadoStr);
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Estado de pedido no válido: " + estadoStr);
-        }
-
-        Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
-
-
-        if (!esAdmin) {
-            if (pedido.getDomiciliarioId() == null ||
-                    !pedido.getDomiciliarioId().equals(actorId)) {
-                throw new ForbiddenException("No puedes modificar pedidos de otro domiciliario");
-            }
-        }
-
-
-        validarTransicionEstado(pedido.getEstado(), nuevoEstado, esAdmin);
-
-        pedido.setEstado(nuevoEstado);
-        Pedido actualizado = pedidoRepository.save(pedido);
-        return toDTO(actualizado);
-    }
-
     private void validarTransicionEstado(EstadoPedido actual, EstadoPedido nuevo, boolean esAdmin) {
         if (esAdmin) {
             return;

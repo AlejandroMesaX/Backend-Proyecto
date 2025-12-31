@@ -34,14 +34,4 @@ public class AdminPedidoController {
     ) {
         return ResponseEntity.ok(pedidoService.asignarPedido(pedidoId, req));
     }
-
-    @PostMapping("/{pedidoId}/estado")
-    public ResponseEntity<PedidoDTO> actualizarEstadoAdmin(
-            @PathVariable Long pedidoId,
-            @RequestBody ActualizarEstadoPedidoRequest req
-    ) {
-
-        PedidoDTO actualizado = pedidoService.actualizarEstado(pedidoId, req.estado, null, true);
-        return ResponseEntity.ok(actualizado);
-    }
 }

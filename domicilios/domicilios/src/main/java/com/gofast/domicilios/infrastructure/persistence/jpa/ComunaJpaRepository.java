@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ComunaJpaRepository extends JpaRepository<ComunaEntity, Long> {
     Optional<ComunaEntity> findByNumero(Integer numero);
+    boolean existsByNumero(Integer numero);
 }

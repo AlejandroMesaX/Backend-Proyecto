@@ -6,5 +6,8 @@ import java.util.List;
 
 public interface ComunaRepositoryPort {
     Optional<Comuna> findByNumero(Integer numero);
+    Optional<Comuna> findById(Long id);
     List<Comuna> findAll();
+    boolean existsByNumero(Integer numero);
+    Comuna save(Comuna comuna);
 }

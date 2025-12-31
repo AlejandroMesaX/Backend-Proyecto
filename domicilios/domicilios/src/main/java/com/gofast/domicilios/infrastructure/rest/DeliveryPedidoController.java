@@ -28,15 +28,4 @@ public class DeliveryPedidoController {
         Long domiciliarioId = currentUser.getId();
         return ResponseEntity.ok(pedidoService.listarPorDomiciliario(domiciliarioId));
     }
-
-    @PostMapping("/{pedidoId}/estado")
-    public ResponseEntity<PedidoDTO> actualizarEstado(
-            @PathVariable Long pedidoId,
-            @RequestBody ActualizarEstadoPedidoRequest req,
-            @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
-        Long domiciliarioId = currentUser.getId();
-        PedidoDTO actualizado = pedidoService.actualizarEstado(pedidoId, req.estado, domiciliarioId, false);
-        return ResponseEntity.ok(actualizado);
-    }
 }

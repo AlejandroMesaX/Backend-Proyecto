@@ -25,11 +25,29 @@ public class ComunaRepositoryAdapter implements ComunaRepositoryPort {
     }
 
     @Override
+    public Optional<Comuna> findById(Long id) {
+        return comunaJpaRepository.findById(id)
+                .map(this::toDomain);
+    }
+
+    @Override
     public List<Comuna> findAll() {
         return comunaJpaRepository.findAll()
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean existsByNumero(Integer numero) {
+        return comunaJpaRepository.existsByNumero(numero);
+    }
+
+    @Override
+    public Comuna save(Comuna comuna) {
+        ComunaEntity entity = toEntity(comuna);
+        ComunaEntity saved = comunaJpaRepository.save(entity);
+        return toDomain(saved);
     }
 
     private Comuna toDomain(ComunaEntity entity) {
@@ -39,5 +57,17 @@ public class ComunaRepositoryAdapter implements ComunaRepositoryPort {
         comuna.setTarifaBase(entity.getTarifaBase());
         comuna.setRecargoPorSalto(entity.getRecargoPorSalto());
         return comuna;
+    }
+
+    private ComunaEntity toEntity(Comuna comuna) {
+
+        ComunaEntity entity = new ComunaEntity();
+
+        entity.setId(comuna.getId());
+        entity.setNumero(comuna.getNumero());
+        entity.setTarifaBase(comuna.getTarifaBase());
+        entity.setRecargoPorSalto(comuna.getRecargoPorSalto());
+
+        return entity;
     }
 }
