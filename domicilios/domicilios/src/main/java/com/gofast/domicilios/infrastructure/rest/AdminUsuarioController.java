@@ -1,5 +1,6 @@
 package com.gofast.domicilios.infrastructure.rest;
 
+import com.gofast.domicilios.application.dto.EditarUsuarioRequest;
 import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.application.service.UsuarioService;
@@ -34,6 +35,15 @@ public class AdminUsuarioController {
     public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody RegisterUsuarioRequest req) {
         UsuarioDTO creado = usuarioService.registrarUsuario(req);
         return ResponseEntity.ok(creado);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> editarUsuario(
+            @PathVariable Long id,
+            @RequestBody EditarUsuarioRequest req
+    ) {
+        usuarioService.editarUsuario(id, req);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{usuarioId}")

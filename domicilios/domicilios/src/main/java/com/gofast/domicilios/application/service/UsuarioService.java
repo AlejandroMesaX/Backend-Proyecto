@@ -1,7 +1,9 @@
 package com.gofast.domicilios.application.service;
 
+import com.gofast.domicilios.application.dto.EditarUsuarioRequest;
 import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
+import com.gofast.domicilios.application.exception.ForbiddenException;
 import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.application.exception.NotFoundException;
@@ -63,6 +65,47 @@ public class UsuarioService {
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
 
         usuario.setActivo(true);
+        usuarioRepository.save(usuario);
+    }
+
+    public void editarUsuario(Long id, EditarUsuarioRequest req) {
+
+        if (id == null) {
+            throw new BadRequestException("El id es obligatorio");
+        }
+
+        if (req == null) {
+            throw new BadRequestException("El cuerpo de la petición es obligatorio");
+        }
+
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
+        // 🔒 Regla: no permitir desactivar al ADMIN logueado (si ya la tienes, respétala)
+        if (req.activo != null && !req.activo && usuario.getRol() == Rol.ADMIN) {
+            throw new ForbiddenException("No se puede desactivar un usuario ADMIN");
+        }
+
+        // ✏️ Nombre
+        if (req.nombre != null && !req.nombre.isBlank()) {
+            usuario.setNombre(req.nombre.trim());
+        }
+
+        // 🎭 Rol
+        if (req.rol != null) {
+            try {
+                Rol nuevoRol = Rol.valueOf(req.rol.toUpperCase());
+                usuario.setRol(nuevoRol);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Rol inválido");
+            }
+        }
+
+        // 🔄 Activo / Inactivo
+        if (req.activo != null) {
+            usuario.setActivo(req.activo);
+        }
+
         usuarioRepository.save(usuario);
     }
 
