@@ -4,6 +4,7 @@ import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
 import com.gofast.domicilios.application.dto.CrearBarrioRequest;
 import com.gofast.domicilios.application.service.BarrioService;
 import com.gofast.domicilios.domain.model.Barrio;
+import com.gofast.domicilios.application.dto.BarrioDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,16 +25,13 @@ public class AdminBarrioController {
         return ResponseEntity.ok(barrioService.crearBarrio(req));
     }
 
-    // ✅ Listar barrios activos (para selects del frontend)
     @GetMapping
-    public ResponseEntity<List<Barrio>> listarActivos() {
-        return ResponseEntity.ok(barrioService.listarBarriosActivos());
-    }
-
-    // ✅ Listar TODOS (activos + inactivos) para panel admin
-    @GetMapping("/todos")
-    public ResponseEntity<List<Barrio>> listarTodos() {
-        return ResponseEntity.ok(barrioService.listarTodos());
+    public ResponseEntity<List<BarrioDTO>> listar(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Integer comuna,
+            @RequestParam(required = false) Boolean activo
+    ) {
+        return ResponseEntity.ok(barrioService.listarBarrios(nombre, comuna, activo));
     }
 
     // ✅ Editar barrio (ADMIN)

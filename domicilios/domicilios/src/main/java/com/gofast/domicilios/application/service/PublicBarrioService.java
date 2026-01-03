@@ -14,7 +14,4 @@ public class PublicBarrioService {
         this.barrioRepository = barrioRepository;
     }
 
-    public List<Barrio> listarActivos() {
-        return barrioRepository.findAllActivos();
-    }
 }

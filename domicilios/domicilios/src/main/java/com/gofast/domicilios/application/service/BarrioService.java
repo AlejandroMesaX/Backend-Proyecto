@@ -1,5 +1,6 @@
 package com.gofast.domicilios.application.service;
 
+import com.gofast.domicilios.application.dto.BarrioDTO;
 import com.gofast.domicilios.application.dto.CrearBarrioRequest;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.domain.model.Barrio;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BarrioService {
@@ -46,14 +48,15 @@ public class BarrioService {
         return barrioRepository.save(barrio);
     }
 
-    // ✅ LISTAR (solo activos para el frontend)
-    public List<Barrio> listarBarriosActivos() {
-        return barrioRepository.findAllActivos();
-    }
-
-    // ✅ LISTAR TODOS (admin panel)
-    public List<Barrio> listarTodos() {
-        return barrioRepository.findAll();
+    public List<BarrioDTO> listarBarrios(String nombre, Integer comunaNumero, Boolean activo) {
+        return barrioRepository.findByFiltros(
+                        (nombre == null || nombre.isBlank()) ? null : nombre.trim(),
+                        comunaNumero,
+                        activo
+                )
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     // ✅ EDITAR (solo si existe)
@@ -109,5 +112,14 @@ public class BarrioService {
         }
 
         barrioRepository.reactivar(barrioId);
+    }
+
+    private BarrioDTO toDTO(Barrio b) {
+        BarrioDTO dto = new BarrioDTO();
+        dto.id = b.getId();
+        dto.nombre = b.getNombre();
+        dto.activo = b.isActivo();
+        dto.comuna = b.getComuna();
+        return dto;
     }
 }

@@ -6,6 +6,7 @@ import com.gofast.domicilios.infrastructure.persistence.entity.BarrioEntity;
 import com.gofast.domicilios.infrastructure.persistence.entity.ComunaEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.BarrioJpaRepository;
 import com.gofast.domicilios.infrastructure.persistence.jpa.ComunaJpaRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -60,17 +61,35 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
                 .map(this::toDomain);
     }
 
-
     @Override
-    public List<Barrio> findAllActivos() {
-        return barrioJpaRepository.findAllByActivoTrue()
-                .stream().map(this::toDomain).collect(Collectors.toList());
-    }
+    public List<Barrio> findByFiltros(String nombre, Integer comunaNumero, Boolean activo) {
 
-    @Override
-    public List<Barrio> findAll() {
-        return barrioJpaRepository.findAll()
-                .stream().map(this::toDomain).collect(Collectors.toList());
+        Specification<BarrioEntity> spec = (root, query, cb) -> cb.conjunction();
+
+        if (nombre != null && !nombre.isBlank()) {
+            String like = "%" + nombre.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("nombre")), like)
+            );
+        }
+
+        if (comunaNumero != null) {
+            // ✅ basado en tu estructura previa: BarrioEntity tiene "comuna" (ManyToOne) y ComunaEntity tiene "numero"
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("comuna").get("numero"), comunaNumero)
+            );
+        }
+
+        if (activo != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("activo"), activo)
+            );
+        }
+
+        return barrioJpaRepository.findAll(spec)
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override

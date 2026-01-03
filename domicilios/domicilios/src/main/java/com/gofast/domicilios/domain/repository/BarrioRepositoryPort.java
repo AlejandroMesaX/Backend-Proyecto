@@ -15,9 +15,7 @@ public interface BarrioRepositoryPort {
 
     Optional<Barrio> findActivoByNombre(String nombre);
 
-    // ✅ listar activos / listar todos
-    List<Barrio> findAllActivos();
-    List<Barrio> findAll();
+    List<Barrio> findByFiltros(String nombre, Integer comunaNumero, Boolean activo);
 
     // ✅ soft delete / reactivate
     void desactivar(Long id);
