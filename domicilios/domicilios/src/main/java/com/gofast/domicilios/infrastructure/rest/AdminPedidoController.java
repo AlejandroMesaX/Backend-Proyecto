@@ -27,6 +27,12 @@ public class AdminPedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidos(clienteId, domiciliarioId));
         }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelar(@PathVariable Long id) {
+        pedidoService.cancelarPedido(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{pedidoId}/asignar")
     public ResponseEntity<PedidoDTO> asignar(
             @PathVariable Long pedidoId,

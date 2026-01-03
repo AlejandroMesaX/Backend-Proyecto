@@ -38,13 +38,9 @@ public class ClientePedidoController {
         return ResponseEntity.ok(pedidos);
     }
 
-    @PostMapping("/{pedidoId}/cancelar")
-    public ResponseEntity<PedidoDTO> cancelarPedido(
-            @PathVariable Long pedidoId,
-            @AuthenticationPrincipal CustomUserDetails currentUser
-    ) {
-        Long clienteId = currentUser.getId();
-        PedidoDTO actualizado = pedidoService.cancelarPedidoPorCliente(pedidoId, clienteId);
-        return ResponseEntity.ok(actualizado);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> cancelarPropioPedido(@PathVariable Long id) {
+        pedidoService.cancelarPedidoPorCliente(id);
+        return ResponseEntity.noContent().build();
     }
 }

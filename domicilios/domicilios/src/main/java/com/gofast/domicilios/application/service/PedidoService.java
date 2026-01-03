@@ -11,8 +11,10 @@ import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
+import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.EnumSet;
@@ -213,6 +215,67 @@ public class PedidoService {
 
         Pedido saved = pedidoRepository.save(pedido);
         return toDTO(saved);
+    }
+
+    public void cancelarPedido(Long id) {
+
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
+
+        // 🔒 Regla de negocio: no cancelar pedidos ya entregados
+        if (pedido.getEstado() == EstadoPedido.ENTREGADO) {
+            throw new BadRequestException("No se puede cancelar un pedido ya entregado");
+        }
+
+        // 🔁 Si ya está cancelado, no hacer nada (idempotente)
+        if (pedido.getEstado() == EstadoPedido.CANCELADO) {
+            return;
+        }
+
+        pedido.setEstado(EstadoPedido.CANCELADO);
+        pedidoRepository.save(pedido);
+    }
+
+    public void cancelarPedidoPorCliente(Long pedidoId) {
+
+        Long clienteIdLogueado = getUsuarioLogueadoId();
+
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
+
+        if (!pedido.getClienteId().equals(clienteIdLogueado)) {
+            throw new ForbiddenException("No puedes cancelar pedidos de otro cliente");
+        }
+
+        if (pedido.getEstado() == EstadoPedido.ENTREGADO) {
+            throw new BadRequestException("No se puede cancelar un pedido entregado");
+        }
+
+        if (pedido.getEstado() == EstadoPedido.CANCELADO) {
+            return;
+        }
+
+        pedido.setEstado(EstadoPedido.CANCELADO);
+        pedidoRepository.save(pedido);
+    }
+
+    private Long getUsuarioLogueadoId() {
+
+        Authentication authentication = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (!(principal instanceof CustomUserDetails userDetails)) {
+            throw new RuntimeException("Principal inválido");
+        }
+
+        return userDetails.getId();
     }
 
     private void validarTransicionEstado(EstadoPedido actual, EstadoPedido nuevo, boolean esAdmin) {
