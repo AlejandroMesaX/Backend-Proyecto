@@ -8,6 +8,8 @@ import com.gofast.domicilios.infrastructure.persistence.jpa.PedidoJpaRepository;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,6 +48,38 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Pedido> findByClienteYFecha(Long clienteId, LocalDate desde, LocalDate hasta) {
+
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
+
+        // ✅ solo del cliente
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("clienteId"), clienteId)
+        );
+
+        // ✅ rango fechas (si tu campo en entidad es LocalDateTime / Timestamp)
+        if (desde != null) {
+            LocalDateTime desdeDT = desde.atStartOfDay();
+            spec = spec.and((root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("fechaCreacion"), desdeDT)
+            );
+        }
+
+        if (hasta != null) {
+            // hasta inclusive: < (hasta + 1 día) 00:00
+            LocalDateTime hastaExclusivo = hasta.plusDays(1).atStartOfDay();
+            spec = spec.and((root, query, cb) ->
+                    cb.lessThan(root.get("fechaCreacion"), hastaExclusivo)
+            );
+        }
+
+        return jpa.findAll(spec)
+                .stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override

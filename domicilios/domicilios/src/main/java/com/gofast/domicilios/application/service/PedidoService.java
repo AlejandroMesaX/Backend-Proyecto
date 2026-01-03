@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
@@ -257,6 +258,16 @@ public class PedidoService {
 
         pedido.setEstado(EstadoPedido.CANCELADO);
         pedidoRepository.save(pedido);
+    }
+
+    public List<PedidoDTO> listarPedidosDelCliente(LocalDate desde, LocalDate hasta) {
+
+        Long clienteId = getUsuarioLogueadoId(); // el helper que ya hicimos con SecurityContextHolder
+
+        return pedidoRepository.findByClienteYFecha(clienteId, desde, hasta)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
     private Long getUsuarioLogueadoId() {

@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -36,6 +37,17 @@ public class ClientePedidoController {
         Long clienteId = currentUser.getId();
         List<PedidoDTO> pedidos = pedidoService.listarPorCliente(clienteId);
         return ResponseEntity.ok(pedidos);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<PedidoDTO>> misPedidos(
+            @RequestParam(required = false) String desde,
+            @RequestParam(required = false) String hasta
+    ) {
+        LocalDate desdeDate = (desde == null || desde.isBlank()) ? null : LocalDate.parse(desde);
+        LocalDate hastaDate = (hasta == null || hasta.isBlank()) ? null : LocalDate.parse(hasta);
+
+        return ResponseEntity.ok(pedidoService.listarPedidosDelCliente(desdeDate, hastaDate));
     }
 
     @DeleteMapping("/{id}")
