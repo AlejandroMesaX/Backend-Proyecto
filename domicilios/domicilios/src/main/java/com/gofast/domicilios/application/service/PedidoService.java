@@ -14,6 +14,7 @@ import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
+import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
@@ -35,6 +36,7 @@ public class PedidoService {
     private final UsuarioRepositoryPort usuarioRepository;
     private final DireccionRepositoryPort direccionRepository;
     private final BarrioRepositoryPort barrioRepository;
+    private final PedidoRealtimePublisher pedidoRealtimePublisher;
 
 
     private static final Set<EstadoPedido> PERMITIR_EN_CAMINO_DESDE =
@@ -48,12 +50,14 @@ public class PedidoService {
                          TarifaDomicilioService tarifaDomicilioService,
                          UsuarioRepositoryPort usuarioRepository,
                          DireccionRepositoryPort direccionRepository,
-                         BarrioRepositoryPort barrioRepository) {
+                         BarrioRepositoryPort barrioRepository,
+                         PedidoRealtimePublisher pedidoRealtimePublisher) {
         this.pedidoRepository = pedidoRepository;
         this.tarifaDomicilioService = tarifaDomicilioService;
         this.usuarioRepository = usuarioRepository;
         this.direccionRepository = direccionRepository;
         this.barrioRepository = barrioRepository;
+        this.pedidoRealtimePublisher = pedidoRealtimePublisher;
     }
 
     // Cliente crea pedido
@@ -119,6 +123,7 @@ public class PedidoService {
         p.setCostoServicio(costo);
 
         Pedido guardado = pedidoRepository.save(p);
+        pedidoRealtimePublisher.pedidoCreado(toDTO(guardado));
         return toDTO(guardado);
     }
 
