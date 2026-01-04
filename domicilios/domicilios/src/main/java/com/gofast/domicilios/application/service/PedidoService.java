@@ -8,6 +8,9 @@ import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.domain.model.Rol;
+import com.gofast.domicilios.domain.model.Direccion;
+import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
+import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
@@ -22,6 +25,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class PedidoService {
@@ -29,6 +33,9 @@ public class PedidoService {
     private final PedidoRepositoryPort pedidoRepository;
     private final TarifaDomicilioService tarifaDomicilioService;
     private final UsuarioRepositoryPort usuarioRepository;
+    private final DireccionRepositoryPort direccionRepository;
+    private final BarrioRepositoryPort barrioRepository;
+
 
     private static final Set<EstadoPedido> PERMITIR_EN_CAMINO_DESDE =
             EnumSet.of(EstadoPedido.ASIGNADO);
@@ -39,14 +46,47 @@ public class PedidoService {
 
     public PedidoService(PedidoRepositoryPort pedidoRepository,
                          TarifaDomicilioService tarifaDomicilioService,
-                         UsuarioRepositoryPort usuarioRepository) {
+                         UsuarioRepositoryPort usuarioRepository,
+                         DireccionRepositoryPort direccionRepository,
+                         BarrioRepositoryPort barrioRepository) {
         this.pedidoRepository = pedidoRepository;
         this.tarifaDomicilioService = tarifaDomicilioService;
         this.usuarioRepository = usuarioRepository;
+        this.direccionRepository = direccionRepository;
+        this.barrioRepository = barrioRepository;
     }
 
     // Cliente crea pedido
     public PedidoDTO crearPedidoParaCliente(Long clienteId, CrearPedidoRequest req) {
+        if (req.direccionId != null) {
+
+            Direccion dir = direccionRepository.findById(req.direccionId)
+                    .orElseThrow(() -> new BadRequestException("La dirección seleccionada no existe"));
+
+            // Debe pertenecer al cliente
+            if (!Objects.equals(dir.getClienteId(), clienteId)) {
+                throw new ForbiddenException("Esa dirección no te pertenece");
+            }
+
+            // Debe estar activa
+            if (!Boolean.TRUE.equals(dir.getActivo())) {
+                throw new BadRequestException("La dirección seleccionada está inactiva");
+            }
+
+            // Obtener nombre del barrio (porque tu pedido usa barrioRecogida como String)
+            var barrio = barrioRepository.findById(dir.getBarrioId())
+                    .orElseThrow(() -> new BadRequestException("El barrio de la dirección no existe"));
+
+            if (!Boolean.TRUE.equals(barrio.isActivo())) {
+                throw new BadRequestException("El barrio de la dirección está inactivo");
+            }
+
+            // ✅ Snapshot en el request (si el front no mandó estos campos, los llenamos)
+            req.direccionRecogida = dir.getDireccionRecogida();
+            req.telefonoContactoRecogida = dir.getTelefonoContacto();
+            req.barrioRecogida = barrio.getNombre();
+        }
+
         if (req.direccionRecogida == null || req.direccionRecogida.isBlank() ||
                 req.barrioRecogida == null || req.barrioRecogida.isBlank() ||
                 req.telefonoContactoRecogida == null || req.telefonoContactoRecogida.isBlank() ||
