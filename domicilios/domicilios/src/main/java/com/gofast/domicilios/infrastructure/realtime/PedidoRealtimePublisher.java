@@ -6,13 +6,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PedidoRealtimePublisher {
-    private final SimpMessagingTemplate template;
 
-    public PedidoRealtimePublisher(SimpMessagingTemplate template) {
-        this.template = template;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public PedidoRealtimePublisher(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
     }
 
     public void pedidoCreado(PedidoDTO dto) {
-        template.convertAndSend("/topic/admin/pedidos", dto);
+        System.out.println("📢 WS SEND /topic/admin/pedidos id=");
+        messagingTemplate.convertAndSend("/topic/admin/pedidos", dto);
     }
 }

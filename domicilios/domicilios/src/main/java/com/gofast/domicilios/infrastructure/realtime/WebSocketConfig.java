@@ -10,15 +10,19 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtStompAuthChannelInterceptor jwtStompAuthChannelInterceptor;
+    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
-    public WebSocketConfig(JwtStompAuthChannelInterceptor jwtStompAuthChannelInterceptor) {
+    public WebSocketConfig(JwtStompAuthChannelInterceptor jwtStompAuthChannelInterceptor, JwtHandshakeInterceptor jwtHandshakeInterceptor) {
         this.jwtStompAuthChannelInterceptor = jwtStompAuthChannelInterceptor;
+        this.jwtHandshakeInterceptor = jwtHandshakeInterceptor;
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("http://localhost:5173")
+                .addInterceptors(jwtHandshakeInterceptor)
+                .setHandshakeHandler(new AuthHandshakeHandler());
     }
 
     @Override
@@ -26,10 +30,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.enableSimpleBroker("/topic", "/queue");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
-    }
-
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(jwtStompAuthChannelInterceptor);
     }
 }

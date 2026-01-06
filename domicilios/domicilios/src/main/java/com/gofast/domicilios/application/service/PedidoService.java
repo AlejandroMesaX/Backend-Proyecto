@@ -122,8 +122,13 @@ public class PedidoService {
 
         p.setCostoServicio(costo);
 
+        System.out.println("✅ Entré a crearPedidoParaCliente");
         Pedido guardado = pedidoRepository.save(p);
+        System.out.println("✅ Pedido guardado");
+
         pedidoRealtimePublisher.pedidoCreado(toDTO(guardado));
+        System.out.println("✅ Publisher ejecutado");
+
         return toDTO(guardado);
     }
 

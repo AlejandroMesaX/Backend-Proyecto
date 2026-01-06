@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -44,16 +44,16 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> {})   // ✅ activa CORS usando CorsConfigurationSource
-                .csrf(csrf -> csrf.disable())
-        // ... lo demás de tu config
-        ;
-
-        return http.build();
-    }
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .cors(cors -> {})   // ✅ activa CORS usando CorsConfigurationSource
+//                .csrf(csrf -> csrf.disable())
+//        // ... lo demás de tu config
+//        ;
+//
+//        return http.build();
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(

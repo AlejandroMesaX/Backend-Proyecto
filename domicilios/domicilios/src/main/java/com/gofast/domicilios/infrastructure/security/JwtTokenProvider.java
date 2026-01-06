@@ -3,7 +3,10 @@ package com.gofast.domicilios.infrastructure.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -53,5 +56,15 @@ public class JwtTokenProvider {
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token);
+    }
+
+    public Authentication getAuthentication(String token, UserDetailsService userDetailsService) {
+        String username = getUsernameFromToken(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        return new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
     }
 }
