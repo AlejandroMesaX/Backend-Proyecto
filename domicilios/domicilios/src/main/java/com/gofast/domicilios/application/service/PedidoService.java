@@ -4,17 +4,16 @@ import com.gofast.domicilios.application.dto.*;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.exception.ForbiddenException;
 import com.gofast.domicilios.application.exception.NotFoundException;
-import com.gofast.domicilios.domain.model.EstadoPedido;
-import com.gofast.domicilios.domain.model.Pedido;
-import com.gofast.domicilios.domain.model.Usuario;
-import com.gofast.domicilios.domain.model.Rol;
-import com.gofast.domicilios.domain.model.Direccion;
+import com.gofast.domicilios.domain.model.*;
 import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
+import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
+import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
+import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
@@ -33,10 +32,12 @@ public class PedidoService {
 
     private final PedidoRepositoryPort pedidoRepository;
     private final TarifaDomicilioService tarifaDomicilioService;
-    private final UsuarioRepositoryPort usuarioRepository;
+    private final UsuarioJpaRepository usuarioRepository;
     private final DireccionRepositoryPort direccionRepository;
     private final BarrioRepositoryPort barrioRepository;
     private final PedidoRealtimePublisher pedidoRealtimePublisher;
+    private final RealtimePublisher realtimePublisher;
+    private final DeliveryService deliveryService;
 
 
     private static final Set<EstadoPedido> PERMITIR_EN_CAMINO_DESDE =
@@ -48,16 +49,20 @@ public class PedidoService {
 
     public PedidoService(PedidoRepositoryPort pedidoRepository,
                          TarifaDomicilioService tarifaDomicilioService,
-                         UsuarioRepositoryPort usuarioRepository,
+                         UsuarioJpaRepository usuarioRepository,
                          DireccionRepositoryPort direccionRepository,
                          BarrioRepositoryPort barrioRepository,
-                         PedidoRealtimePublisher pedidoRealtimePublisher) {
+                         PedidoRealtimePublisher pedidoRealtimePublisher,
+                         RealtimePublisher realtimePublisher,
+                         DeliveryService deliveryService) {
         this.pedidoRepository = pedidoRepository;
         this.tarifaDomicilioService = tarifaDomicilioService;
         this.usuarioRepository = usuarioRepository;
         this.direccionRepository = direccionRepository;
         this.barrioRepository = barrioRepository;
         this.pedidoRealtimePublisher = pedidoRealtimePublisher;
+        this.realtimePublisher = realtimePublisher;
+        this.deliveryService = deliveryService;
     }
 
     // Cliente crea pedido
@@ -164,12 +169,16 @@ public class PedidoService {
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
         // Validar domiciliario
-        Usuario domi = usuarioRepository.findById(req.domiciliarioId)
+        UsuarioEntity domi = usuarioRepository.findById(req.domiciliarioId)
                 .orElseThrow(() -> new NotFoundException("Domiciliario no encontrado"));
 
         // ✅ rol correcto
         if (domi.getRol() != Rol.DELIVERY) { // o el nombre que uses para domiciliario
             throw new BadRequestException("El usuario no tiene rol DOMICILIARIO/DELIVERY");
+        }
+
+        if (domi.getEstadoDelivery() != EstadoDelivery.DISPONIBLE) {
+            throw new RuntimeException("El domiciliario ya no está disponible");
         }
 
         // ✅ activo (si manejas activo en usuario)
@@ -188,15 +197,23 @@ public class PedidoService {
         }
 
         pedido.setDomiciliarioId(req.domiciliarioId);
-
-        // (Opcional) cambiar estado
         pedido.setEstado(EstadoPedido.ASIGNADO);
-
         Pedido saved = pedidoRepository.save(pedido);
+
+        domi.setEstadoDelivery(EstadoDelivery.POR_RECOGER);
+        domi.setDisponibleDesde(null);
+        usuarioRepository.save(domi);
+
+        PedidoDTO dto = toDTO(pedido);
+
+        realtimePublisher.pedidoActualizado(dto);
+        realtimePublisher.deliveryActualizado(deliveryService.toDto(domi));
+        realtimePublisher.pedidoParaDelivery(domi.getId(), dto);
+
         return toDTO(saved); // tu mapper exacto (el que ya tienes)
     }
 
-    private Usuario usuarioDesdeAuth(Authentication authentication) {
+    private UsuarioEntity usuarioDesdeAuth(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
             throw new ForbiddenException("No autenticado");
         }
@@ -207,7 +224,7 @@ public class PedidoService {
 
     public List<PedidoDTO> listarPedidosDelDomiciliario(Authentication authentication, EstadoPedido estado) {
 
-        Usuario u = usuarioDesdeAuth(authentication);
+        UsuarioEntity u = usuarioDesdeAuth(authentication);
 
         if (u.getRol() != Rol.DELIVERY) {
             throw new ForbiddenException("Solo domiciliarios pueden ver esta ruta");
@@ -230,7 +247,7 @@ public class PedidoService {
             throw new BadRequestException("estado es obligatorio");
         }
 
-        Usuario u = usuarioDesdeAuth(authentication);
+        UsuarioEntity u = usuarioDesdeAuth(authentication);
 
         if (u.getRol() != Rol.DELIVERY) {
             throw new ForbiddenException("Solo domiciliarios pueden cambiar estado");

@@ -1,7 +1,10 @@
 package com.gofast.domicilios.infrastructure.persistence.entity;
 
+import com.gofast.domicilios.domain.model.EstadoDelivery;
 import com.gofast.domicilios.domain.model.Rol;
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
@@ -23,6 +26,12 @@ public class UsuarioEntity {
 
     @Column(nullable = false)
     private boolean activo = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoDelivery estadoDelivery = EstadoDelivery.DESCONECTADO;
+
+    private LocalDateTime disponibleDesde;
 
     public Long getId() {
         return id;
@@ -70,5 +79,21 @@ public class UsuarioEntity {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public EstadoDelivery getEstadoDelivery() {
+        return estadoDelivery;
+    }
+
+    public void setEstadoDelivery(EstadoDelivery estadoDelivery) {
+        this.estadoDelivery = estadoDelivery;
+    }
+
+    public LocalDateTime getDisponibleDesde() {
+        return disponibleDesde;
+    }
+
+    public void setDisponibleDesde(LocalDateTime disponibleDesde) {
+        this.disponibleDesde = disponibleDesde;
     }
 }
