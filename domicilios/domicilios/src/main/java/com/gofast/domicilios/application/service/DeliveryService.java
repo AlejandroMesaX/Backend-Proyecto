@@ -42,6 +42,7 @@ public class DeliveryService {
         }
 
         userRepo.save(u);
+        realtime.deliveryActualizado(toDto(u));
     }
 
 

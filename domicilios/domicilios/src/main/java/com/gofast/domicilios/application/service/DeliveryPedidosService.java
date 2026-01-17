@@ -99,8 +99,6 @@ public class DeliveryPedidosService {
     }
 
     private PedidoDTO toDTO(Pedido p) {
-        // ✅ usa tu mapper real aquí.
-        // Si ya tienes un método existente, llama ese.
         PedidoDTO dto = new PedidoDTO();
         dto.id = p.getId();
         dto.clienteId = p.getClienteId();
