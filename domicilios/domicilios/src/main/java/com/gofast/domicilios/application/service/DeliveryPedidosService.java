@@ -50,9 +50,9 @@ public class DeliveryPedidosService {
         }
 
         // ✅ transición válida
-        if (d.getEstadoDelivery() != EstadoDelivery.POR_RECOGER) {
+       if (d.getEstadoDelivery() != EstadoDelivery.POR_RECOGER) {
             throw new RuntimeException("Estado del domiciliario inválido para recoger");
-        }
+       }
 
         // Pedido a EN_CAMINO
         p.setEstado(EstadoPedido.EN_CAMINO);

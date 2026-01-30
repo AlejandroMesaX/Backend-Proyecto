@@ -16,10 +16,12 @@ public class RealtimePublisher {
 
     // Admin topics
     public void pedidoActualizado(PedidoDTO dto) {
+
         messaging.convertAndSend("/topic/admin/pedidos", dto);
     }
 
     public void deliveryActualizado(DeliveryDTO dto) {
+
         messaging.convertAndSend("/topic/admin/domiciliarios", dto);
     }
 

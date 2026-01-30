@@ -15,9 +15,12 @@ import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository
 import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,6 +41,8 @@ public class PedidoService {
     private final PedidoRealtimePublisher pedidoRealtimePublisher;
     private final RealtimePublisher realtimePublisher;
     private final DeliveryService deliveryService;
+    private final DeliveryPedidosService pedidosService;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     private static final Set<EstadoPedido> PERMITIR_EN_CAMINO_DESDE =
@@ -54,7 +59,9 @@ public class PedidoService {
                          BarrioRepositoryPort barrioRepository,
                          PedidoRealtimePublisher pedidoRealtimePublisher,
                          RealtimePublisher realtimePublisher,
-                         DeliveryService deliveryService) {
+                         DeliveryService deliveryService,
+                         SimpMessagingTemplate messagingTemplate,
+                         DeliveryPedidosService pedidosService) {
         this.pedidoRepository = pedidoRepository;
         this.tarifaDomicilioService = tarifaDomicilioService;
         this.usuarioRepository = usuarioRepository;
@@ -63,6 +70,8 @@ public class PedidoService {
         this.pedidoRealtimePublisher = pedidoRealtimePublisher;
         this.realtimePublisher = realtimePublisher;
         this.deliveryService = deliveryService;
+        this.messagingTemplate = messagingTemplate;
+        this.pedidosService = pedidosService;
     }
 
     // Cliente crea pedido
@@ -256,32 +265,32 @@ public class PedidoService {
             throw new ForbiddenException("Usuario inactivo");
         }
 
-        EstadoPedido nuevoEstado;
-        try {
-            nuevoEstado = EstadoPedido.valueOf(req.estado.trim().toUpperCase());
-        } catch (Exception e) {
-            throw new BadRequestException("Estado inválido: " + req.estado);
-        }
+//        EstadoPedido nuevoEstado;
+//        try {
+//            nuevoEstado = EstadoPedido.valueOf(req.estado.trim().toUpperCase());
+//        } catch (Exception e) {
+//            throw new BadRequestException("Estado inválido: " + req.estado);
+//        }
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
-        // ✅ seguridad: solo si el pedido está asignado a mí
-        if (pedido.getDomiciliarioId() == null || !pedido.getDomiciliarioId().equals(u.getId())) {
-            throw new ForbiddenException("No puedes modificar un pedido que no está asignado a ti");
-        }
-
-        // ✅ regla simple de transición (ajusta si quieres)
-        if (pedido.getEstado() == EstadoPedido.ASIGNADO && nuevoEstado == EstadoPedido.EN_CAMINO) {
-            pedido.setEstado(nuevoEstado);
-        } else if (pedido.getEstado() == EstadoPedido.EN_CAMINO && nuevoEstado == EstadoPedido.ENTREGADO) {
-            pedido.setEstado(nuevoEstado);
-        } else {
-            throw new BadRequestException("Transición de estado no permitida: " +
-                    pedido.getEstado().name() + " -> " + nuevoEstado.name());
-        }
+        if(pedido.getEstado() == EstadoPedido.ASIGNADO && u.getEstadoDelivery() == EstadoDelivery.POR_RECOGER)
+        {
+            pedido.setEstado(EstadoPedido.EN_CAMINO);
+            u.setEstadoDelivery(EstadoDelivery.POR_ENTREGAR);
+        } else if (pedido.getEstado() == EstadoPedido.EN_CAMINO && u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR)
+            {
+                pedido.setEstado(EstadoPedido.ENTREGADO);
+                u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
+                u.setDisponibleDesde(LocalDateTime.now());
+            }
 
         Pedido saved = pedidoRepository.save(pedido);
+        UsuarioEntity save = usuarioRepository.save(u);
+
+        realtimePublisher.pedidoActualizado(toDTO(saved));
+        realtimePublisher.deliveryActualizado(deliveryService.toDto(save));
         return toDTO(saved);
     }
 

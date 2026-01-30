@@ -28,8 +28,7 @@ public class DeliveryService {
         UsuarioEntity u = userRepo.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if (u.getEstadoDelivery() == EstadoDelivery.POR_RECOGER ||
-                u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR) {
+        if (u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR) {
             throw new RuntimeException("No puedes cambiar disponibilidad con un pedido activo");
         }
 

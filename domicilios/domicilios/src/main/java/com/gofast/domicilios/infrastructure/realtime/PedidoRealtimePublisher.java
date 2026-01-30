@@ -14,7 +14,6 @@ public class PedidoRealtimePublisher {
     }
 
     public void pedidoCreado(PedidoDTO dto) {
-        System.out.println("📢 WS SEND /topic/admin/pedidos id=");
         messagingTemplate.convertAndSend("/topic/admin/pedidos", dto);
     }
 }

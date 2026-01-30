@@ -5,7 +5,9 @@ import com.gofast.domicilios.application.dto.ActualizarEstadoPedidoRequest;
 import com.gofast.domicilios.application.service.PedidoService;
 import com.gofast.domicilios.domain.model.EstadoPedido;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 

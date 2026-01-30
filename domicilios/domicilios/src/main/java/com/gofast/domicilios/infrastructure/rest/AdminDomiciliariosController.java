@@ -23,6 +23,6 @@ public class AdminDomiciliariosController {
     @GetMapping("/disponibles")
     public List<DeliveryDTO> disponiblesFIFO() {
         return userRepo.findDeliveryDisponiblesFIFO()
-                .stream().map(deliveryService::toDto).toList();
+                .stream().map (deliveryService::toDto).toList();
     }
 }
