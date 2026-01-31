@@ -15,6 +15,7 @@ import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository
 import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -136,12 +137,9 @@ public class PedidoService {
 
         p.setCostoServicio(costo);
 
-        System.out.println("✅ Entré a crearPedidoParaCliente");
-        Pedido guardado = pedidoRepository.save(p);
-        System.out.println("✅ Pedido guardado");
 
+        Pedido guardado = pedidoRepository.save(p);
         pedidoRealtimePublisher.pedidoCreado(toDTO(guardado));
-        System.out.println("✅ Publisher ejecutado");
 
         return toDTO(guardado);
     }
@@ -275,43 +273,71 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
-        if(pedido.getEstado() == EstadoPedido.ASIGNADO && u.getEstadoDelivery() == EstadoDelivery.POR_RECOGER)
-        {
+
+        if(pedido.getEstado() == EstadoPedido.ASIGNADO && u.getEstadoDelivery() == EstadoDelivery.POR_RECOGER) {
             pedido.setEstado(EstadoPedido.EN_CAMINO);
             u.setEstadoDelivery(EstadoDelivery.POR_ENTREGAR);
-        } else if (pedido.getEstado() == EstadoPedido.EN_CAMINO && u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR)
-            {
+        }else if (pedido.getEstado() == EstadoPedido.EN_CAMINO && u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR) {
                 pedido.setEstado(EstadoPedido.ENTREGADO);
                 u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
                 u.setDisponibleDesde(LocalDateTime.now());
-            }
+        }
 
         Pedido saved = pedidoRepository.save(pedido);
         UsuarioEntity save = usuarioRepository.save(u);
 
         realtimePublisher.pedidoActualizado(toDTO(saved));
-        realtimePublisher.deliveryActualizado(deliveryService.toDto(save));
+        realtimePublisher.deliveryActualizado(toDto(save));
         return toDTO(saved);
     }
 
-    public void cancelarPedido(Long id) {
+    @Transactional
+    public void cancelarPedido(Long pedidoId) {
 
-        Pedido pedido = pedidoRepository.findById(id)
+        Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
 
-        // 🔒 Regla de negocio: no cancelar pedidos ya entregados
-        if (pedido.getEstado() == EstadoPedido.ENTREGADO) {
-            throw new BadRequestException("No se puede cancelar un pedido ya entregado");
-        }
-
-        // 🔁 Si ya está cancelado, no hacer nada (idempotente)
-        if (pedido.getEstado() == EstadoPedido.CANCELADO) {
-            return;
-        }
+        //Long domId = pedido.getDomiciliarioId();
 
         pedido.setEstado(EstadoPedido.CANCELADO);
-        pedidoRepository.save(pedido);
+
+        if(pedido.getDomiciliarioId() != null){
+            UsuarioEntity u = usuarioRepository.findById(pedido.getDomiciliarioId())
+                    .orElseThrow(() -> new NotFoundException("Domiciliario no encontrado"));
+            u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
+            u.setDisponibleDesde(LocalDateTime.now());
+            UsuarioEntity save = usuarioRepository.save(u);
+            realtimePublisher.pedidoParaDelivery(pedido.getDomiciliarioId(), toDTO(pedido));
+            realtimePublisher.deliveryActualizado(toDto(save));
+        }
+
+        Pedido saved = pedidoRepository.save(pedido);
+
+        realtimePublisher.pedidoActualizado(toDTO(saved));
+
+//        // ✅ marcar como cancelado (recomendado: NO borrar físico)
+//        pedido.setEstado(EstadoPedido.CANCELADO);
+//        Pedido saved = pedidoRepository.save(pedido);
+//
+//        // ✅ notificar admin pedidos
+//        realtimePublisher.pedidoActualizado(toDTO(saved));
+//
+//        // ✅ si había delivery asignado, avisarle para que lo quite del panel
+//        if (domId != null) {
+//            realtimePublisher.pedidoParaDelivery(domId, toDTO(saved));
+//
+//            // ✅ devolver el delivery a disponible
+//            UsuarioEntity dom = usuarioRepository.findById(domId)
+//                    .orElseThrow(() -> new NotFoundException("Domiciliario no encontrado"));
+//
+//            dom.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
+//            dom.setDisponibleDesde(LocalDateTime.now());
+//            UsuarioEntity save = usuarioRepository.save(dom);
+//
+//            realtimePublisher.deliveryActualizado(toDto(save));
+//        }
     }
+
 
     public void cancelarPedidoPorCliente(Long pedidoId) {
 
@@ -409,6 +435,15 @@ public class PedidoService {
         dto.telefonoQuienRecibe = p.getTelefonoQuienRecibe();
 
         return dto;
+    }
+
+    public DeliveryDTO toDto(UsuarioEntity u) {
+        return new DeliveryDTO(
+                u.getId(),
+                u.getEmail(),
+                u.getEstadoDelivery().name(),
+                u.getDisponibleDesde()
+        );
     }
 
     public PedidoDTO cancelarPedidoPorCliente(Long pedidoId, Long clienteId) {
