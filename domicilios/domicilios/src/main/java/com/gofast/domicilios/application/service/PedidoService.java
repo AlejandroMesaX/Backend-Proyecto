@@ -10,7 +10,9 @@ import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.domain.service.TarifaDomicilioService;
+import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
 import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
+import com.gofast.domicilios.infrastructure.persistence.jpa.PedidoJpaRepository;
 import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
@@ -165,6 +167,19 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
+    public List<PedidoDTO> misPedidosEntregadosComoDomiciliario(Authentication authentication) {
+        UsuarioEntity u = usuarioDesdeAuth(authentication);
+
+        if (u.getRol() != Rol.DELIVERY) throw new ForbiddenException("Solo domiciliarios");
+        if (!u.isActivo()) throw new ForbiddenException("Usuario inactivo");
+
+        return pedidoRepository.findEntregadosByDomiciliarioId(u.getId())
+                .stream()
+                .map(this::toDTO) // tu mapper domain->DTO
+                .toList();
+    }
+
+
 
     public PedidoDTO asignarPedido(Long pedidoId, AsignarDomiciliarioRequest req) {
 
@@ -195,11 +210,9 @@ public class PedidoService {
 
         // (Opcional) regla de negocio: solo asignar si está pendiente
         // Si tu estado es String:
-        if (pedido.getEstado() != EstadoPedido.CREADO
-                && pedido.getEstado() != EstadoPedido.ASIGNADO
-                && pedido.getEstado() != EstadoPedido.EN_CAMINO) {
+        if (pedido.getEstado() != EstadoPedido.CREADO && pedido.getEstado() != EstadoPedido.INCIDENCIA) {
             throw new BadRequestException(
-                    "Solo se puede asignar un pedido en estado CREADO,ASIGNADO o EN_CAMINO"
+                    "Solo se puede asignar un pedido en estado CREADO o INCIDENCIA"
             );
         }
 
@@ -338,6 +351,66 @@ public class PedidoService {
 //        }
     }
 
+    @Transactional
+    public PedidoDTO reportarIncidenciaComoDomiciliario(
+            Authentication authentication,
+            Long pedidoId,
+            ReportarIncidenciaRequest req
+    ) {
+        System.out.println("MOTIVO RECIBIDO: " + (req != null ? req.motivo : "null"));
+
+        if (req == null || req.motivo == null || req.motivo.isBlank()) {
+            throw new BadRequestException("motivo es obligatorio");
+        }
+
+        UsuarioEntity u = usuarioDesdeAuth(authentication);
+
+        if (u.getRol() != Rol.DELIVERY) throw new ForbiddenException("Solo domiciliarios");
+        if (!u.isActivo()) throw new ForbiddenException("Usuario inactivo");
+
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new NotFoundException("Pedido no encontrado"));
+
+        // Solo si está asignado a mí
+        if (pedido.getDomiciliarioId() == null || !pedido.getDomiciliarioId().equals(u.getId())) {
+            throw new ForbiddenException("No puedes reportar incidencia de un pedido que no es tuyo");
+        }
+
+        // Solo si está en un estado “activo”
+        if (pedido.getEstado() != EstadoPedido.ASIGNADO && pedido.getEstado() != EstadoPedido.EN_CAMINO) {
+            throw new BadRequestException("Solo puedes pedir ayuda si el pedido está ASIGNADO o EN_CAMINO");
+        }
+
+        // 1) Pedido -> INCIDENCIA + motivo
+        pedido.setEstado(EstadoPedido.INCIDENCIA);
+        pedido.setMotivoIncidencia(req.motivo.trim());
+        pedido.setFechaIncidencia(LocalDateTime.now());
+
+        System.out.println("ANTES SAVE motivo: " + pedido.getMotivoIncidencia());
+        Pedido saved = pedidoRepository.save(pedido);
+        System.out.println("DESPUES SAVE motivo: " + saved.getMotivoIncidencia());
+
+        PedidoDTO pedidoDto = toDTO(saved);
+        System.out.println("MOTIVO GUARDADO: " + saved.getMotivoIncidencia());
+
+        // 2) Delivery vuelve a DISPONIBLE
+        u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
+        u.setDisponibleDesde(LocalDateTime.now());
+        UsuarioEntity savedU = usuarioRepository.save(u);
+
+        // 3) Realtime:
+        // admin ve pedido con INCIDENCIA
+        realtimePublisher.pedidoActualizado(pedidoDto);
+
+        // admin actualiza FIFO (domiciliario DISPONIBLE)
+        realtimePublisher.deliveryActualizado(toDto(savedU));
+
+        // delivery recibe pedido INCIDENCIA (tu hook lo puede ocultar o mostrar “en incidencia”)
+        realtimePublisher.pedidoParaDelivery(u.getId(), pedidoDto);
+
+        return pedidoDto;
+    }
+
 
     public void cancelarPedidoPorCliente(Long pedidoId) {
 
@@ -433,6 +506,11 @@ public class PedidoService {
         dto.barrioEntrega = p.getBarrioEntrega();
         dto.nombreQuienRecibe = p.getNombreQuienRecibe();
         dto.telefonoQuienRecibe = p.getTelefonoQuienRecibe();
+
+        dto.motivoIncidencia = p.getMotivoIncidencia();
+        dto.fechaIncidencia = p.getFechaIncidencia() != null
+                ? p.getFechaIncidencia().toString()
+                : null;
 
         return dto;
     }

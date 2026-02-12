@@ -18,4 +18,7 @@ public class PedidoDTO {
     public String barrioEntrega;
     public String nombreQuienRecibe;
     public String telefonoQuienRecibe;
+
+    public String motivoIncidencia;
+    public String fechaIncidencia;
 }

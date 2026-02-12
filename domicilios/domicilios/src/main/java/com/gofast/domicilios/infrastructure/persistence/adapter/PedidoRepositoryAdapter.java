@@ -1,5 +1,6 @@
 package com.gofast.domicilios.infrastructure.persistence.adapter;
 
+import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
@@ -49,6 +50,16 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
                 .map(this::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Pedido> findEntregadosByDomiciliarioId(Long domiciliarioId) {
+        return jpa
+                .findByDomiciliarioIdAndEstadoOrderByIdDesc(domiciliarioId, EstadoPedido.ENTREGADO)
+                .stream()
+                .map(this::toDomain)   // o como se llame tu mapper Entity->Domain
+                .toList();
+    }
+
 
     @Override
     public List<Pedido> findByClienteYFecha(Long clienteId, LocalDate desde, LocalDate hasta) {
@@ -134,6 +145,8 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
                 .collect(Collectors.toList());
     }
 
+
+
     private PedidoEntity toEntity(Pedido p) {
         PedidoEntity e = new PedidoEntity();
         e.setId(p.getId());
@@ -151,6 +164,8 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
         e.setBarrioEntrega(p.getBarrioEntrega());
         e.setNombreQuienRecibe(p.getNombreQuienRecibe());
         e.setTelefonoQuienRecibe(p.getTelefonoQuienRecibe());
+        e.setMotivoIncidencia(p.getMotivoIncidencia());
+        e.setFechaIncidencia(p.getFechaIncidencia());
 
         return e;
     }
@@ -172,6 +187,8 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
         p.setBarrioEntrega(e.getBarrioEntrega());
         p.setNombreQuienRecibe(e.getNombreQuienRecibe());
         p.setTelefonoQuienRecibe(e.getTelefonoQuienRecibe());
+        p.setMotivoIncidencia(e.getMotivoIncidencia());
+        p.setFechaIncidencia(e.getFechaIncidencia());
         return p;
     }
 }

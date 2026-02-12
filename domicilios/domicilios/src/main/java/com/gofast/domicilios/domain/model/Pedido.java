@@ -21,6 +21,9 @@ public class Pedido {
     private String nombreQuienRecibe;
     private String telefonoQuienRecibe;
 
+    private String motivoIncidencia;
+    private LocalDateTime fechaIncidencia;
+
     public Pedido() {}
 
     public Long getId() {
@@ -125,5 +128,21 @@ public class Pedido {
 
     public void setTelefonoQuienRecibe(String telefonoQuienRecibe) {
         this.telefonoQuienRecibe = telefonoQuienRecibe;
+    }
+
+    public String getMotivoIncidencia() {
+        return motivoIncidencia;
+    }
+
+    public void setMotivoIncidencia(String motivoIncidencia) {
+        this.motivoIncidencia = motivoIncidencia;
+    }
+
+    public LocalDateTime getFechaIncidencia() {
+        return fechaIncidencia;
+    }
+
+    public void setFechaIncidencia(LocalDateTime fechaIncidencia) {
+        this.fechaIncidencia = fechaIncidencia;
     }
 }

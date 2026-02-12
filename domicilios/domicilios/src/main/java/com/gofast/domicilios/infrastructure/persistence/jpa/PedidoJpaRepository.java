@@ -1,5 +1,6 @@
 package com.gofast.domicilios.infrastructure.persistence.jpa;
 
+import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -11,4 +12,6 @@ public interface PedidoJpaRepository extends JpaRepository<PedidoEntity, Long>,
     List<PedidoEntity> findByClienteId(Long clienteId);
 
     List<PedidoEntity> findByDomiciliarioId(Long domiciliarioId);
+
+    List<PedidoEntity> findByDomiciliarioIdAndEstadoOrderByIdDesc(Long domiciliarioId, EstadoPedido estado);
 }

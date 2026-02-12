@@ -51,6 +51,12 @@ public class PedidoEntity {
     @Column(name = "telefono_quien_recibe", nullable = false)
     private String telefonoQuienRecibe;
 
+    @Column(name = "motivo_incidencia", length = 255)
+    private String motivoIncidencia;
+
+    @Column(name = "fecha_incidencia")
+    private LocalDateTime fechaIncidencia;
+
     public Long getId() {
         return id;
     }
@@ -153,5 +159,21 @@ public class PedidoEntity {
 
     public void setTelefonoQuienRecibe(String telefonoQuienRecibe) {
         this.telefonoQuienRecibe = telefonoQuienRecibe;
+    }
+
+    public String getMotivoIncidencia() {
+        return motivoIncidencia;
+    }
+
+    public void setMotivoIncidencia(String motivoIncidencia) {
+        this.motivoIncidencia = motivoIncidencia;
+    }
+
+    public LocalDateTime getFechaIncidencia() {
+        return fechaIncidencia;
+    }
+
+    public void setFechaIncidencia(LocalDateTime fechaIncidencia) {
+        this.fechaIncidencia = fechaIncidencia;
     }
 }
