@@ -7,8 +7,6 @@ import com.gofast.domicilios.application.dto.CrearComunaRequest;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.dto.EditarComunaRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
-import java.math.BigDecimal;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;

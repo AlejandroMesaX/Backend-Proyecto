@@ -1,6 +1,9 @@
 package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.PedidoDTO;
+import com.gofast.domicilios.application.exception.BadRequestException;
+import com.gofast.domicilios.application.exception.ForbiddenException;
+import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.model.EstadoDelivery;
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
@@ -8,10 +11,11 @@ import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
-import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -20,13 +24,14 @@ import java.util.Objects;
 public class DeliveryPedidosService {
 
     private final PedidoRepositoryPort pedidoRepository;
-    private final UsuarioJpaRepository usuarioRepository;
+    private final UsuarioRepositoryPort usuarioRepository;
     private final DeliveryService deliveryService;
     private final RealtimePublisher realtimePublisher;
+    private static final Logger log = LoggerFactory.getLogger(DeliveryPedidosService.class);
 
     public DeliveryPedidosService(
             PedidoRepositoryPort pedidoRepository,
-            UsuarioJpaRepository usuarioRepository,
+            UsuarioRepositoryPort usuarioRepository,
             DeliveryService deliveryService,
             RealtimePublisher realtimePublisher
     ) {
@@ -39,26 +44,44 @@ public class DeliveryPedidosService {
     @Transactional
     public void marcarRecogido(Long pedidoId, String email) {
         Pedido p = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RuntimeException("Pedido no existe"));
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Pedido no encontrado al marcar recogido. pedidoId='{}'",
+                            pedidoId);
+                    return new NotFoundException(
+                            "Pedido no encontrado",
+                            "PEDIDO_NOT_FOUND");
+                });
 
-        UsuarioEntity d = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Domiciliario no existe"));
+        Usuario d = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Domiciliario no encontrado en recogido. email='{}'",
+                            email);
+                    return new NotFoundException(
+                            "Domiciliario no encontrado",
+                            "DOMICILIARIO_NOT_FOUND");
+                });
 
-        // ✅ debe ser el dueño del pedido
         if (!Objects.equals(p.getDomiciliarioId(), d.getId())) {
-            throw new RuntimeException("Este pedido no te pertenece");
+            log.warn(
+                    "Domiciliario '{}' intentó recoger pedido '{}' que no le pertenece",
+                    d.getId(), pedidoId);
+            throw new ForbiddenException(
+                    "No tienes permiso para recoger este pedido",
+                    "PEDIDO_NO_ASIGNADO");
         }
 
-        // ✅ transición válida
-       if (d.getEstadoDelivery() != EstadoDelivery.POR_RECOGER) {
-            throw new RuntimeException("Estado del domiciliario inválido para recoger");
-       }
+        if (d.getEstadoDelivery() != EstadoDelivery.POR_RECOGER) {
+            throw new BadRequestException(
+                    "El domiciliario no está en estado válido para recoger",
+                    "ESTADO_DELIVERY_INVALIDO",
+                    "delivery");
+        }
 
-        // Pedido a EN_CAMINO
         p.setEstado(EstadoPedido.EN_CAMINO);
         pedidoRepository.save(p);
 
-        // Domiciliario a POR_ENTREGAR
         d.setEstadoDelivery(EstadoDelivery.POR_ENTREGAR);
         usuarioRepository.save(d);
 
@@ -71,24 +94,44 @@ public class DeliveryPedidosService {
     @Transactional
     public void marcarEntregado(Long pedidoId, String email) {
         Pedido p = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RuntimeException("Pedido no existe"));
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Pedido no encontrado al marcar entregado. pedidoId='{}'",
+                            pedidoId);
+                    return new NotFoundException(
+                            "Pedido no encontrado",
+                            "PEDIDO_NOT_FOUND");
+                });
 
-        UsuarioEntity d = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Domiciliario no existe"));
+        Usuario d = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Domiciliario no encontrado. email='{}'",
+                            email);
+                    return new NotFoundException(
+                            "Domiciliario no encontrado",
+                            "DOMICILIARIO_NOT_FOUND");
+                });
 
         if (!Objects.equals(p.getDomiciliarioId(), d.getId())) {
-            throw new RuntimeException("Este pedido no te pertenece");
+            log.warn(
+                    "Domiciliario '{}' intentó entregar pedido '{}' que no le pertenece",
+                    d.getId(), pedidoId);
+            throw new ForbiddenException(
+                    "No tienes permiso para entregar este pedido",
+                    "PEDIDO_NO_ASIGNADO");
         }
 
         if (d.getEstadoDelivery() != EstadoDelivery.POR_ENTREGAR) {
-            throw new RuntimeException("Estado del domiciliario inválido para entregar");
+            throw new BadRequestException(
+                    "El domiciliario no está en estado válido para entregar",
+                    "ESTADO_DELIVERY_INVALIDO",
+                    "delivery");
         }
 
-        // Pedido terminado
         p.setEstado(EstadoPedido.ENTREGADO);
         pedidoRepository.save(p);
 
-        // Domiciliario vuelve a DISPONIBLE (entra de nuevo a la cola)
         d.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
         d.setDisponibleDesde(LocalDateTime.now());
         usuarioRepository.save(d);
@@ -103,9 +146,9 @@ public class DeliveryPedidosService {
         dto.id = p.getId();
         dto.clienteId = p.getClienteId();
         dto.domiciliarioId = p.getDomiciliarioId();
-        dto.estado = p.getEstado().toString(); // ajusta si es enum
+        dto.estado = p.getEstado().toString();
         dto.costoServicio = p.getCostoServicio();
-        dto.fechaCreacion = p.getFechaCreacion().toString(); // ajusta
+        dto.fechaCreacion = p.getFechaCreacion().toString();
         dto.direccionRecogida = p.getDireccionRecogida();
         dto.barrioRecogida = p.getBarrioRecogida();
         dto.telefonoContactoRecogida = p.getTelefonoContactoRecogida();

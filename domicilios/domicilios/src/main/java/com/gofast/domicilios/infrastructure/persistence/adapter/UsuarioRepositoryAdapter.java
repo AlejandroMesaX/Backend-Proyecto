@@ -91,6 +91,8 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         e.setPasswordHash(u.getPasswordHash());
         e.setRol(u.getRol());
         e.setActivo(u.isActivo());
+        e.setDisponibleDesde(u.getDisponibleDesde());
+        e.setEstadoDelivery(u.getEstadoDelivery());
         return e;
     }
 
@@ -102,6 +104,8 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         u.setPasswordHash(e.getPasswordHash());
         u.setRol(e.getRol());
         u.setActivo(e.isActivo());
+        u.setEstadoDelivery(e.getEstadoDelivery());
+        u.setDisponibleDesde(e.getDisponibleDesde());
         return u;
     }
 }

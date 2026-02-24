@@ -1,5 +1,7 @@
 package com.gofast.domicilios.domain.model;
 
+import java.time.LocalDateTime;
+
 public class Usuario {
     private Long id;
     private String nombre;
@@ -7,6 +9,8 @@ public class Usuario {
     private String passwordHash;
     private Rol rol;
     private boolean activo;
+    private EstadoDelivery estadoDelivery;
+    private LocalDateTime disponibleDesde;
 
     public Usuario() {}
 
@@ -65,5 +69,21 @@ public class Usuario {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public EstadoDelivery getEstadoDelivery() {
+        return estadoDelivery;
+    }
+
+    public void setEstadoDelivery(EstadoDelivery estadoDelivery) {
+        this.estadoDelivery = estadoDelivery;
+    }
+
+    public LocalDateTime getDisponibleDesde() {
+        return disponibleDesde;
+    }
+
+    public void setDisponibleDesde(LocalDateTime disponibleDesde) {
+        this.disponibleDesde = disponibleDesde;
     }
 }

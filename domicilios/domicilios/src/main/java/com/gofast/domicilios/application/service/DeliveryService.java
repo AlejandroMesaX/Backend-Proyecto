@@ -45,7 +45,7 @@ public class DeliveryService {
     }
 
 
-    public DeliveryDTO toDto(UsuarioEntity u) {
+    public DeliveryDTO toDto(Usuario u) {
         return new DeliveryDTO(
                 u.getId(),
                 u.getEmail(),
