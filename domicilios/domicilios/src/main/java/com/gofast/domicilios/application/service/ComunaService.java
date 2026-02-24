@@ -7,84 +7,77 @@ import com.gofast.domicilios.application.dto.CrearComunaRequest;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.dto.EditarComunaRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
-
-
 import java.math.BigDecimal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 public class ComunaService {
     private final ComunaRepositoryPort comunaRepository;
+    private static final Logger log = LoggerFactory.getLogger(ComunaService.class);
 
     public ComunaService(ComunaRepositoryPort comunaRepository) {
         this.comunaRepository = comunaRepository;
     }
 
-    // ✅ LISTAR TODAS (ADMIN)
+    @Transactional(readOnly = true)
     public List<Comuna> listarTodas() {
         return comunaRepository.findAll();
     }
 
+    @Transactional
     public void crearComuna(CrearComunaRequest req) {
-
-        // 🔐 Validaciones básicas
-        if (req == null) {
-            throw new BadRequestException("El cuerpo de la petición es obligatorio");
+        if (comunaRepository.existsByNumero(req.numero())) {
+            log.warn(
+                    "Intento de crear comuna duplicada. numero='{}'",
+                    req.numero());
+            throw new BadRequestException(
+                    "Ya existe una comuna con ese número",
+                    "COMUNA_DUPLICADA",
+                    "numero");
         }
 
-        if (req.numero == null || req.numero <= 0) {
-            throw new BadRequestException("El número de comuna es obligatorio y debe ser mayor a 0");
-        }
-
-        if (req.tarifaBase == null || req.tarifaBase.compareTo(BigDecimal.ZERO) < 0) {
-            throw new BadRequestException("La tarifa base debe ser mayor o igual a 0");
-        }
-
-        if (req.recargoPorSalto == null || req.recargoPorSalto.compareTo(BigDecimal.ZERO) < 0) {
-            throw new BadRequestException("El recargo por salto debe ser mayor o igual a 0");
-        }
-
-        // ❌ No permitir comunas duplicadas por número
-        if (comunaRepository.existsByNumero(req.numero)) {
-            throw new BadRequestException("Ya existe una comuna con el número " + req.numero);
-        }
-
-        // ✅ Crear dominio
         Comuna comuna = new Comuna();
-        comuna.setNumero(req.numero);
-        comuna.setTarifaBase(req.tarifaBase);
-        comuna.setRecargoPorSalto(req.recargoPorSalto);
+        comuna.setNumero(req.numero());
+        comuna.setTarifaBase(req.tarifaBase());
+        comuna.setRecargoPorSalto(req.recargoPorSalto());
 
-        comunaRepository.save(comuna);
+        try {
+            comunaRepository.save(comuna);
+        } catch (DataIntegrityViolationException e) {
+            log.warn(
+                    "Comuna duplicada detectada por constraint de BD. numero='{}'",
+                    req.numero());
+            throw new BadRequestException(
+                    "Ya existe una comuna con ese número",
+                    "COMUNA_DUPLICADA", "numero");
+        }
     }
 
+    @Transactional
     public void editarComuna(Long id, EditarComunaRequest req) {
-
-        if (id == null) throw new BadRequestException("id es obligatorio");
-        if (req == null) throw new BadRequestException("El cuerpo es obligatorio");
-
         Comuna comuna = comunaRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Comuna no encontrada"));
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Comuna no encontrada al editar. id='{}'",
+                            id);
+                    return new NotFoundException(
+                            "Comuna no encontrada",
+                            "COMUNA_NOT_FOUND");
+                });
 
-        // Validaciones + actualización parcial
-        if (req.tarifaBase != null) {
-            if (req.tarifaBase.compareTo(BigDecimal.ZERO) < 0) {
-                throw new BadRequestException("tarifaBase debe ser >= 0");
-            }
-            comuna.setTarifaBase(req.tarifaBase);
+        if (req.tarifaBase() != null) {
+            comuna.setTarifaBase(req.tarifaBase());
         }
 
-        if (req.recargoPorSalto != null) {
-            if (req.recargoPorSalto.compareTo(BigDecimal.ZERO) < 0) {
-                throw new BadRequestException("recargoPorSalto debe ser >= 0");
-            }
-            comuna.setRecargoPorSalto(req.recargoPorSalto);
+        if (req.recargoPorSalto() != null) {
+            comuna.setRecargoPorSalto(req.recargoPorSalto());
         }
 
         comunaRepository.save(comuna);

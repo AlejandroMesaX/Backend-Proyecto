@@ -13,7 +13,6 @@ import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +71,7 @@ public class BarrioService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<BarrioDTO> listarBarrios(String nombre, Integer comunaNumero, Boolean activo) {
         return barrioRepository.findByFiltros(
                         (nombre == null || nombre.isBlank()) ? null : nombre.trim(),
