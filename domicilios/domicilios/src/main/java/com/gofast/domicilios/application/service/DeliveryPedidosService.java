@@ -4,10 +4,7 @@ import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.exception.ForbiddenException;
 import com.gofast.domicilios.application.exception.NotFoundException;
-import com.gofast.domicilios.domain.model.EstadoDelivery;
-import com.gofast.domicilios.domain.model.EstadoPedido;
-import com.gofast.domicilios.domain.model.Pedido;
-import com.gofast.domicilios.domain.model.Usuario;
+import com.gofast.domicilios.domain.model.*;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
@@ -62,6 +59,14 @@ public class DeliveryPedidosService {
                             "DOMICILIARIO_NOT_FOUND");
                 });
 
+        if (d.getRol() != Rol.DELIVERY) {
+            log.warn("Usuario '{}' con rol '{}' intentó recoger pedido '{}'",
+                    d.getId(), d.getRol(), pedidoId);
+            throw new ForbiddenException(
+                    "Solo los domiciliarios pueden recoger pedidos",
+                    "ROL_NO_PERMITIDO");
+        }
+
         if (!Objects.equals(p.getDomiciliarioId(), d.getId())) {
             log.warn(
                     "Domiciliario '{}' intentó recoger pedido '{}' que no le pertenece",
@@ -111,6 +116,14 @@ public class DeliveryPedidosService {
                             "Domiciliario no encontrado",
                             "DOMICILIARIO_NOT_FOUND");
                 });
+
+        if (d.getRol() != Rol.DELIVERY) {
+            log.warn("Usuario '{}' con rol '{}' intentó entregar pedido '{}'",
+                    d.getId(), d.getRol(), pedidoId);
+            throw new ForbiddenException(
+                    "Solo los domiciliarios pueden entregar pedidos",
+                    "ROL_NO_PERMITIDO");
+        }
 
         if (!Objects.equals(p.getDomiciliarioId(), d.getId())) {
             log.warn(

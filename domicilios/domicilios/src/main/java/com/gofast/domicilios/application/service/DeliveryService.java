@@ -2,8 +2,10 @@ package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.DeliveryDTO;
 import com.gofast.domicilios.application.exception.BadRequestException;
+import com.gofast.domicilios.application.exception.ForbiddenException;
 import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.model.EstadoDelivery;
+import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
@@ -37,6 +39,15 @@ public class DeliveryService {
                             "Usuario no encontrado",
                             "USUARIO_NOT_FOUND");
                 });
+
+        if (u.getRol() != Rol.DELIVERY) {
+            log.warn(
+                    "Usuario '{}' con rol '{}' intentó cambiar estado de delivery",
+                    u.getId(), u.getRol());
+            throw new ForbiddenException(
+                    "Solo los domiciliarios pueden cambiar su disponibilidad",
+                    "ROL_NO_PERMITIDO");
+        }
 
         if (u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR) {
             throw new BadRequestException(

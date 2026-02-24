@@ -1,7 +1,17 @@
 package com.gofast.domicilios.application.dto;
 
-public class CrearDireccionRequest {
-    public Long barrioId;
-    public String direccionRecogida;
-    public String telefonoContacto;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record CrearDireccionRequest(
+        @
+                NotNull(message = "barrioId es obligatorio")
+        Long barrioId,
+
+        @NotBlank(message = "direccionRecogida es obligatoria")
+        String direccionRecogida,
+
+        @NotBlank(message = "telefonoContacto es obligatorio")
+        String telefonoContacto
+) {
 }

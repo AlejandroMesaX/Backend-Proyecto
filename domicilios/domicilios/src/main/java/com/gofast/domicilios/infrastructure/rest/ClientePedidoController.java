@@ -4,6 +4,7 @@ import com.gofast.domicilios.application.dto.CrearPedidoRequest;
 import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.application.service.PedidoService;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,13 +24,12 @@ public class ClientePedidoController {
     // Crear pedido cliente
     @PostMapping
     public ResponseEntity<PedidoDTO> crearPedido(@AuthenticationPrincipal CustomUserDetails currentUser,
-                                                 @RequestBody CrearPedidoRequest req) {
+                                                 @RequestBody @Valid CrearPedidoRequest req) {
         Long clienteId = currentUser.getId();
         PedidoDTO creado = pedidoService.crearPedidoParaCliente(clienteId, req);
         return ResponseEntity.ok(creado);
     }
 
-    // Listar los pedidos
     @GetMapping("/mios")
     public ResponseEntity<List<PedidoDTO>> listarMisPedidos(
             @AuthenticationPrincipal CustomUserDetails currentUser

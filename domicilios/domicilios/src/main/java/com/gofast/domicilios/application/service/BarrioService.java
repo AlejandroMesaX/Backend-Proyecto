@@ -177,6 +177,15 @@ public class BarrioService {
             );
         }
 
+        if (barrioRepository.existsActivoByNombre(actual.getNombre())) {
+            log.warn("Intento de reactivar barrio con nombre duplicado. nombre='{}'",
+                    actual.getNombre());
+            throw new BadRequestException(
+                    "Ya existe un barrio activo con ese nombre",
+                    "BARRIO_DUPLICADO",
+                    "barrio");
+        }
+
         barrioRepository.reactivar(barrioId);
     }
 
