@@ -83,6 +83,14 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Usuario> findDeliveryDisponiblesFIFO() {
+        return jpa.findDeliveryDisponiblesFIFO()
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     private UsuarioEntity toEntity(Usuario u) {
         UsuarioEntity e = new UsuarioEntity();
         e.setId(u.getId());

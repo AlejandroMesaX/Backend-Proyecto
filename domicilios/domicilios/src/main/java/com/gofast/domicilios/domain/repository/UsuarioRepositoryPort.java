@@ -19,6 +19,6 @@ public interface UsuarioRepositoryPort {
 
     List<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo);
 
-    //void deleteById(Long id);
+    List<Usuario> findDeliveryDisponiblesFIFO();
 
 }
