@@ -7,6 +7,7 @@ import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.domain.repository.ComunaRepositoryPort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
@@ -17,12 +18,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class BarrioService {
 
     private final BarrioRepositoryPort barrioRepository;
     private final ComunaRepositoryPort comunaRepository;
-    private static final Logger log = LoggerFactory.getLogger(BarrioService.class);
+    //private static final Logger log = LoggerFactory.getLogger(BarrioService.class);
 
     public BarrioService(BarrioRepositoryPort barrioRepository,
                          ComunaRepositoryPort comunaRepository) {

@@ -1,5 +1,9 @@
 package com.gofast.domicilios.application.dto;
 
-public class ReportarIncidenciaRequest {
-    public String motivo;
+import jakarta.validation.constraints.NotBlank;
+
+public record ReportarIncidenciaRequest(
+        @NotBlank(message = "motivo es obligatorio")
+        String motivo
+) {
 }

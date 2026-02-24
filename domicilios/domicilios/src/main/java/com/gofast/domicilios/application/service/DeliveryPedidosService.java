@@ -8,6 +8,7 @@ import com.gofast.domicilios.domain.model.*;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class DeliveryPedidosService {
 
@@ -23,7 +25,7 @@ public class DeliveryPedidosService {
     private final UsuarioRepositoryPort usuarioRepository;
     private final DeliveryService deliveryService;
     private final RealtimePublisher realtimePublisher;
-    private static final Logger log = LoggerFactory.getLogger(DeliveryPedidosService.class);
+    //private static final Logger log = LoggerFactory.getLogger(DeliveryPedidosService.class);
 
     public DeliveryPedidosService(
             PedidoRepositoryPort pedidoRepository,

@@ -3,10 +3,9 @@ package com.gofast.domicilios.infrastructure.rest;
 import com.gofast.domicilios.application.dto.AsignarDomiciliarioRequest;
 import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.application.service.PedidoService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.gofast.domicilios.application.dto.ActualizarEstadoPedidoRequest;
-
 import java.util.List;
 
 @RestController
@@ -36,7 +35,7 @@ public class AdminPedidoController {
     @PatchMapping("/{pedidoId}/asignar")
     public ResponseEntity<PedidoDTO> asignar(
             @PathVariable Long pedidoId,
-            @RequestBody AsignarDomiciliarioRequest req
+            @RequestBody @Valid AsignarDomiciliarioRequest req
     ) {
         return ResponseEntity.ok(pedidoService.asignarPedido(pedidoId, req));
     }

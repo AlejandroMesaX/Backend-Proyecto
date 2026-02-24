@@ -9,6 +9,7 @@ import com.gofast.domicilios.domain.model.EstadoPedido;
 
 import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -42,11 +43,10 @@ public class DomiciliarioPedidoController {
     @PatchMapping("/{pedidoId}/estado")
     public ResponseEntity<PedidoDTO> cambiarEstado(
             Authentication authentication,
-            @PathVariable Long pedidoId,
-            @RequestBody ActualizarEstadoPedidoRequest req
+            @PathVariable Long pedidoId
     ) {
         return ResponseEntity.ok(
-                pedidoService.cambiarEstadoComoDomiciliario(authentication, pedidoId, req)
+                pedidoService.cambiarEstadoComoDomiciliario(authentication, pedidoId)
         );
     }
 
@@ -54,7 +54,7 @@ public class DomiciliarioPedidoController {
     public ResponseEntity<PedidoDTO> pedirAyuda(
             Authentication authentication,
             @PathVariable Long pedidoId,
-            @RequestBody ReportarIncidenciaRequest req
+            @RequestBody @Valid ReportarIncidenciaRequest req
     ) {
         return ResponseEntity.ok(
                 pedidoService.reportarIncidenciaComoDomiciliario(authentication, pedidoId, req)

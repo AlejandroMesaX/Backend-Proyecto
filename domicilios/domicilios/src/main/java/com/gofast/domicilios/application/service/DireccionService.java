@@ -7,6 +7,7 @@ import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.domain.model.Direccion;
 import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 public class DireccionService {
 
     private final DireccionRepositoryPort direccionRepo;
     private final BarrioRepositoryPort barrioRepo;
-    private static final Logger log = LoggerFactory.getLogger(DireccionService.class);
+    //private static final Logger log = LoggerFactory.getLogger(DireccionService.class);
 
     public DireccionService(DireccionRepositoryPort direccionRepo, BarrioRepositoryPort barrioRepo) {
         this.direccionRepo = direccionRepo;
