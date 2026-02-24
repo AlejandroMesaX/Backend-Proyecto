@@ -5,6 +5,7 @@ import com.gofast.domicilios.application.dto.CrearBarrioRequest;
 import com.gofast.domicilios.application.service.BarrioService;
 import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.application.dto.BarrioDTO;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +20,8 @@ public class AdminBarrioController {
         this.barrioService = barrioService;
     }
 
-    // ✅ Crear barrio (ADMIN)
     @PostMapping
-    public ResponseEntity<Barrio> crear(@RequestBody CrearBarrioRequest req) {
+    public ResponseEntity<Barrio> crear(@RequestBody @Valid CrearBarrioRequest req) {
         return ResponseEntity.ok(barrioService.crearBarrio(req));
     }
 
@@ -34,21 +34,18 @@ public class AdminBarrioController {
         return ResponseEntity.ok(barrioService.listarBarrios(nombre, comuna, activo));
     }
 
-    // ✅ Editar barrio (ADMIN)
     @PutMapping("/{barrioId}")
     public ResponseEntity<Barrio> editar(@PathVariable Long barrioId,
-                                         @RequestBody ActualizarBarrioRequest req) {
+                                         @RequestBody @Valid ActualizarBarrioRequest req) {
         return ResponseEntity.ok(barrioService.editarBarrio(barrioId, req));
     }
 
-    // ✅ Soft delete (desactivar)
-    @DeleteMapping("/{barrioId}")
+    @PatchMapping("/{barrioId}/deshabilitar")
     public ResponseEntity<Void> desactivar(@PathVariable Long barrioId) {
         barrioService.desactivarBarrio(barrioId);
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ Reactivar
     @PatchMapping("/{barrioId}/reactivar")
     public ResponseEntity<Void> reactivar(@PathVariable Long barrioId) {
         barrioService.reactivarBarrio(barrioId);

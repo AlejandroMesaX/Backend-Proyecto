@@ -44,10 +44,10 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void deleteById(Long id) {
-        jpa.deleteById(id);
-    }
+//    @Override
+//    public void deleteById(Long id) {
+//        jpa.deleteById(id);
+//    }
 
 
     @Override

@@ -1,6 +1,11 @@
 package com.gofast.domicilios.application.dto;
 
-public class CrearBarrioRequest {
-    public String nombre;
-    public Integer comunaNumero;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record CrearBarrioRequest(
+        @NotBlank(message = "El nombre es obligatorio")
+        String nombre,
+        @NotNull(message = "La comuna es obligatoria")
+        Integer comunaNumero) {
 }

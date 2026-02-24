@@ -1,5 +1,6 @@
 package com.gofast.domicilios.infrastructure.persistence.adapter;
 
+import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.BarrioEntity;
@@ -37,10 +38,12 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
     @Override
     public Barrio save(Barrio barrio) {
         ComunaEntity comuna = comunaJpaRepository.findByNumero(barrio.getComuna())
-                .orElseThrow(() -> new IllegalArgumentException("Comuna no encontrada: " + barrio.getComuna()));
+                .orElseThrow(() -> new NotFoundException(
+                        "Comuna no encontrada: " + barrio.getComuna(),
+                        "COMUNA_NOT_FOUND"
+                ));
 
         BarrioEntity entity = new BarrioEntity();
-        // si viene id, es update
         entity.setId(barrio.getId());
         entity.setNombre(barrio.getNombre());
         entity.setComuna(comuna);
@@ -74,7 +77,6 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
         }
 
         if (comunaNumero != null) {
-            // ✅ basado en tu estructura previa: BarrioEntity tiene "comuna" (ManyToOne) y ComunaEntity tiene "numero"
             spec = spec.and((root, query, cb) ->
                     cb.equal(root.get("comuna").get("numero"), comunaNumero)
             );
@@ -95,7 +97,10 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
     @Override
     public void desactivar(Long id) {
         BarrioEntity entity = barrioJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Barrio no encontrado"));
+                .orElseThrow(() -> new NotFoundException(
+                        "Barrio no encontrado: " + id,
+                        "BARRIO_NOT_FOUND"
+                ));
 
         entity.setActivo(false);
         barrioJpaRepository.save(entity);
@@ -104,11 +109,15 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
     @Override
     public void reactivar(Long id) {
         BarrioEntity entity = barrioJpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Barrio no encontrado"));
+                .orElseThrow(() -> new NotFoundException(
+                        "Barrio no encontrado: " + id,
+                        "BARRIO_NOT_FOUND"
+                ));
 
         entity.setActivo(true);
         barrioJpaRepository.save(entity);
     }
+
 
     private Barrio toDomain(BarrioEntity entity) {
         Barrio barrio = new Barrio();

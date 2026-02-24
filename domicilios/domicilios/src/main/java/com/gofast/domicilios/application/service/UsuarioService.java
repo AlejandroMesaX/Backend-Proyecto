@@ -56,6 +56,10 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
 
+        if (usuario.getRol() == Rol.ADMIN) {
+            throw new BadRequestException("No se puede deshabilitar un ADMIN");
+        }
+
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
     }

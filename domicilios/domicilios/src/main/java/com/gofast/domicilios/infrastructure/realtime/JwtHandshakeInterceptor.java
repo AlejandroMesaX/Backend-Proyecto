@@ -49,16 +49,13 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             if (jwtTokenProvider.validateToken(token)) {
                 Authentication auth = jwtTokenProvider.getAuthentication(token, userDetailsService);
 
-                // ✅ guardamos el auth para usarlo como Principal en la sesión WS
                 attributes.put("AUTH", auth);
 
-                System.out.println("WS HANDSHAKE user=" + auth.getName());
                 auth.getAuthorities().forEach(a -> System.out.println("WS HANDSHAKE AUTH=" + a.getAuthority()));
                 return true;
             }
         }
 
-        // Si quieres permitir WS sin auth, retorna true; pero para admin realtime mejor bloquear:
         return false;
     }
 

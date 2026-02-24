@@ -40,17 +40,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .cors(cors -> {})   // ✅ activa CORS usando CorsConfigurationSource
-//                .csrf(csrf -> csrf.disable())
-//        // ... lo demás de tu config
-//        ;
-//
-//        return http.build();
-//    }
-
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration config) throws Exception {
