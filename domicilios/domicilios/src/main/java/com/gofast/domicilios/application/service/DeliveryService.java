@@ -1,35 +1,48 @@
 package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.DeliveryDTO;
+import com.gofast.domicilios.application.exception.BadRequestException;
+import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.model.EstadoDelivery;
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
-import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
-import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 
 
 @Service
 public class DeliveryService {
-    private final UsuarioJpaRepository userRepo;
+    private final UsuarioRepositoryPort usuarioRepository;
     private final RealtimePublisher realtime;
+    private static final Logger log = LoggerFactory.getLogger(DeliveryService.class);
 
-    public DeliveryService(UsuarioJpaRepository userRepo, RealtimePublisher realtime) {
-        this.userRepo = userRepo;
+    public DeliveryService(UsuarioRepositoryPort usuarioRepository, RealtimePublisher realtime) {
+        this.usuarioRepository = usuarioRepository;
         this.realtime = realtime;
     }
 
     @Transactional
     public void setDisponible(String email, boolean disponible) {
-        UsuarioEntity u = userRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        Usuario u = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn(
+                            "Usuario no encontrado al cambiar disponibilidad. email='{}'",
+                            email);
+                    return new NotFoundException(
+                            "Usuario no encontrado",
+                            "USUARIO_NOT_FOUND");
+                });
 
         if (u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR) {
-            throw new RuntimeException("No puedes cambiar disponibilidad con un pedido activo");
+            throw new BadRequestException(
+                    "No puedes cambiar disponibilidad con un pedido activo",
+                    "DELIVERY_CON_PEDIDO_ACTIVO",
+                    "delivery");
         }
 
         if (disponible) {
@@ -40,7 +53,7 @@ public class DeliveryService {
             u.setDisponibleDesde(null);
         }
 
-        userRepo.save(u);
+        usuarioRepository.save(u);
         realtime.deliveryActualizado(toDto(u));
     }
 

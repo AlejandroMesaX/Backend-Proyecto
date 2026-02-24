@@ -10,7 +10,6 @@ import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
-import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
