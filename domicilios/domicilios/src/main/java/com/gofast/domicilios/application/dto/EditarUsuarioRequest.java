@@ -1,7 +1,8 @@
 package com.gofast.domicilios.application.dto;
 
-public class EditarUsuarioRequest {
-    public String nombre;
-    public String rol;
-    public Boolean activo;
+public record EditarUsuarioRequest(
+        String nombre,
+        String rol,
+        Boolean activo
+) {
 }

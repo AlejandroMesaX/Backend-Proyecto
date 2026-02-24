@@ -103,7 +103,7 @@ public class PedidoService {
                         "BARRIO_INACTIVO",
                         "barrio");
             }
-            
+
             if (req.direccionId == null) {
                 if (req.direccionRecogida == null || req.direccionRecogida.isBlank() ||
                         req.barrioRecogida == null || req.barrioRecogida.isBlank() ||
