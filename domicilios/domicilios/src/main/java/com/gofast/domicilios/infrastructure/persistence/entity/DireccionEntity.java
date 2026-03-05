@@ -14,9 +14,8 @@ public class DireccionEntity {
     @Column(name = "cliente_id", nullable = false)
     private Long clienteId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "barrio_id", nullable = false)
-    private BarrioEntity barrio;
+    @Column(name = "barrio", nullable = false)
+    private String barrio;
 
     @Column(name = "direccion_recogida", nullable = false)
     private String direccionRecogida;
@@ -43,11 +42,11 @@ public class DireccionEntity {
         this.clienteId = clienteId;
     }
 
-    public BarrioEntity getBarrio() {
+    public String getBarrio() {
         return barrio;
     }
 
-    public void setBarrio(BarrioEntity barrio) {
+    public void setBarrio(String barrio) {
         this.barrio = barrio;
     }
 

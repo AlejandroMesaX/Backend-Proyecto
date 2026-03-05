@@ -14,4 +14,6 @@ public interface DireccionRepositoryPort {
     List<Direccion> findByCliente(Long clienteId, Boolean activo);
 
     boolean existsByIdAndClienteId(Long id, Long clienteId);
+
+    void deleteById(Long id);
 }

@@ -50,7 +50,7 @@ public class ClientePedidoController {
         return ResponseEntity.ok(pedidoService.listarPedidosDelCliente(desdeDate, hastaDate));
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<Void> cancelarPropioPedido(@PathVariable Long id) {
         pedidoService.cancelarPedidoPorCliente(id);
         return ResponseEntity.noContent().build();

@@ -95,6 +95,7 @@ public class DeliveryPedidosService {
         realtimePublisher.pedidoActualizado(dto);
         realtimePublisher.deliveryActualizado(deliveryService.toDto(d));
         realtimePublisher.pedidoParaDelivery(d.getId(), dto);
+        realtimePublisher.pedidoParaCliente(p.getClienteId(), dto);
     }
 
     @Transactional

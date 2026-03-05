@@ -87,11 +87,11 @@ public class PedidoService {
                         "direccion");
             }
 
-            Barrio barrio = barrioRepository.findById(dir.getBarrioId())
+            Barrio barrio = barrioRepository.findActivoByNombre(dir.getBarrio())
                     .orElseThrow(() -> {
                         log.warn(
                                 "Barrio no encontrado para dirección. barrioId='{}'",
-                                dir.getBarrioId());
+                                dir.getBarrio());
                         return new NotFoundException(
                                 "Barrio no encontrado",
                                 "BARRIO_NOT_FOUND");
@@ -257,6 +257,7 @@ public class PedidoService {
         realtimePublisher.pedidoActualizado(dto);
         realtimePublisher.deliveryActualizado(deliveryService.toDto(domi));
         realtimePublisher.pedidoParaDelivery(domi.getId(), dto);
+        realtimePublisher.pedidoParaCliente(pedido.getClienteId(), dto);
 
         return dto;
     }
@@ -357,6 +358,7 @@ public class PedidoService {
         PedidoDTO dto = toDTO(saved);
         realtimePublisher.pedidoActualizado(dto);
         realtimePublisher.deliveryActualizado(deliveryService.toDto(u));
+        realtimePublisher.pedidoParaCliente(pedido.getClienteId(), dto);
 
         return dto;
     }
@@ -398,6 +400,7 @@ public class PedidoService {
             usuarioRepository.save(u);
 
             realtimePublisher.pedidoParaDelivery(pedido.getDomiciliarioId(), toDTO(pedido));
+            realtimePublisher.pedidoParaCliente(pedido.getClienteId(), toDTO(pedido));
             realtimePublisher.deliveryActualizado(deliveryService.toDto(u));
         }
 
@@ -472,6 +475,7 @@ public class PedidoService {
         realtimePublisher.pedidoActualizado(dto);
         realtimePublisher.deliveryActualizado(deliveryService.toDto(u));
         realtimePublisher.pedidoParaDelivery(u.getId(), dto);
+        realtimePublisher.pedidoParaCliente(pedido.getClienteId(), dto);
 
         return dto;
     }
@@ -524,6 +528,7 @@ public class PedidoService {
         Pedido saved = pedidoRepository.save(pedido);
 
         realtimePublisher.pedidoActualizado(toDTO(saved));
+        realtimePublisher.pedidoParaCliente(pedido.getClienteId(), toDTO(saved));
 
         return toDTO(saved);
     }
@@ -571,6 +576,10 @@ public class PedidoService {
         dto.motivoIncidencia = p.getMotivoIncidencia();
         dto.fechaIncidencia = p.getFechaIncidencia() != null
                 ? p.getFechaIncidencia().toString() : null;
+        if (p.getDomiciliarioId() != null) {
+            usuarioRepository.findById(p.getDomiciliarioId())
+                    .ifPresent(u -> dto.domiciliarioNombre = u.getNombre());
+        }
         return dto;
     }
 }

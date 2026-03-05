@@ -3,8 +3,8 @@ package com.gofast.domicilios.domain.model;
 public class Direccion {
     private Long id;
     private Long clienteId;
-    private Long barrioId;
 
+    private String barrio;
     private String direccionRecogida;
     private String telefonoContacto;
 
@@ -23,14 +23,6 @@ public class Direccion {
     }
     public void setClienteId(Long clienteId) {
         this.clienteId = clienteId;
-    }
-
-    public Long getBarrioId() {
-        return barrioId;
-    }
-
-    public void setBarrioId(Long barrioId) {
-        this.barrioId = barrioId;
     }
 
     public String getDireccionRecogida() {
@@ -55,5 +47,13 @@ public class Direccion {
 
     public void setActivo(Boolean activo) {
         this.activo = activo;
+    }
+
+    public String getBarrio() {
+        return barrio;
+    }
+
+    public void setBarrio(String barrio) {
+        this.barrio = barrio;
     }
 }

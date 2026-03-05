@@ -44,6 +44,11 @@ public class DireccionRepositoryAdapter implements DireccionRepositoryPort {
     }
 
     @Override
+    public void deleteById(Long id) {
+        direccionJpaRepository.deleteById(id);
+    }
+
+    @Override
     public boolean existsByIdAndClienteId(Long id, Long clienteId) {
         return direccionJpaRepository.existsByIdAndClienteId(id, clienteId);
     }
@@ -53,9 +58,8 @@ public class DireccionRepositoryAdapter implements DireccionRepositoryPort {
         e.setId(d.getId());
         e.setClienteId(d.getClienteId());
 
-        BarrioEntity barrioRef = new BarrioEntity();
-        barrioRef.setId(d.getBarrioId());
-        e.setBarrio(barrioRef);
+
+        e.setBarrio(d.getBarrio());
 
         e.setDireccionRecogida(d.getDireccionRecogida());
         e.setTelefonoContacto(d.getTelefonoContacto());
@@ -68,7 +72,7 @@ public class DireccionRepositoryAdapter implements DireccionRepositoryPort {
         Direccion d = new Direccion();
         d.setId(e.getId());
         d.setClienteId(e.getClienteId());
-        d.setBarrioId(e.getBarrio().getId());
+        d.setBarrio(e.getBarrio());        // ✅ esta línea faltaba
         d.setDireccionRecogida(e.getDireccionRecogida());
         d.setTelefonoContacto(e.getTelefonoContacto());
         d.setActivo(e.isActivo());

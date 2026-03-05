@@ -41,11 +41,11 @@ public class DireccionService {
 
     @Transactional
     public DireccionDTO crear(CrearDireccionRequest req) {
-        Barrio barrio = barrioRepo.findById(req.barrioId())
+        Barrio barrio = barrioRepo.findActivoByNombre(req.barrio())
                 .orElseThrow(() -> {
                     log.warn(
-                            "Barrio no encontrado al crear dirección. barrioId='{}'",
-                            req.barrioId());
+                            "Barrio no encontrado al crear dirección. barrioNombre='{}'",
+                            req.barrio());
                     return new NotFoundException(
                             "Barrio no encontrado",
                             "BARRIO_NOT_FOUND");
@@ -61,7 +61,7 @@ public class DireccionService {
 
         Direccion d = new Direccion();
         d.setClienteId(clienteId);
-        d.setBarrioId(req.barrioId());
+        d.setBarrio(req.barrio());
         d.setDireccionRecogida(req.direccionRecogida().trim());
         d.setTelefonoContacto(req.telefonoContacto().trim());
         d.setActivo(true);
@@ -102,7 +102,7 @@ public class DireccionService {
             if (!barrio.isActivo()) {
                 throw new BadRequestException("El barrio está inactivo", "BARRIO_INACTIVO", "barrioId");
             }
-            d.setBarrioId(req.barrioId());
+//            d.setBarrioId(req.barrioId());
         }
 
         if (req.direccionRecogida() != null && !req.direccionRecogida().isBlank()) {
@@ -145,12 +145,13 @@ public class DireccionService {
 
         d.setActivo(false);
         direccionRepo.save(d);
+        direccionRepo.deleteById(id);
     }
 
     private DireccionDTO toDTO(Direccion d) {
         DireccionDTO dto = new DireccionDTO();
         dto.id = d.getId();
-        dto.barrioId = d.getBarrioId();
+        dto.barrio = d.getBarrio();    // ✅ nombre del barrio
         dto.direccionRecogida = d.getDireccionRecogida();
         dto.telefonoContacto = d.getTelefonoContacto();
         dto.activo = d.getActivo();

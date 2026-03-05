@@ -6,6 +6,7 @@ public class PedidoDTO {
     public Long id;
     public Long clienteId;
     public Long domiciliarioId;
+    public String domiciliarioNombre;
     public String estado;
     public BigDecimal costoServicio;
     public String fechaCreacion;
