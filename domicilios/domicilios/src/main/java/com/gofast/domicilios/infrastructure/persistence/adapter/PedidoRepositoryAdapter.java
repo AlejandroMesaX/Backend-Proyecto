@@ -123,20 +123,23 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
     }
 
     @Override
-    public List<Pedido> findByFiltros(Long clienteId, Long domiciliarioId) {
+    public List<Pedido> findByFiltros(Long clienteId, Long domiciliarioId, String estado) {
 
         Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
 
         if (clienteId != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("clienteId"), clienteId)
-            );
+                    cb.equal(root.get("clienteId"), clienteId));
         }
 
         if (domiciliarioId != null) {
             spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("domiciliarioId"), domiciliarioId)
-            );
+                    cb.equal(root.get("domiciliarioId"), domiciliarioId));
+        }
+
+        if (estado != null && !estado.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("estado"), EstadoPedido.valueOf(estado)));
         }
 
         return jpa.findAll(spec)

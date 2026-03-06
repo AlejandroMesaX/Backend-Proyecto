@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class PedidoDTO {
     public Long id;
     public Long clienteId;
+    public String clienteNombre;
     public Long domiciliarioId;
     public String domiciliarioNombre;
     public String estado;

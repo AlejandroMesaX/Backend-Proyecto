@@ -73,6 +73,7 @@ public class DeliveryService {
     public DeliveryDTO toDto(Usuario u) {
         return new DeliveryDTO(
                 u.getId(),
+                u.getNombre(),
                 u.getEmail(),
                 u.getEstadoDelivery().name(),
                 u.getDisponibleDesde()

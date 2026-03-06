@@ -157,8 +157,8 @@ public class PedidoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PedidoDTO> listarPedidos(Long clienteId, Long domiciliarioId) {
-        return pedidoRepository.findByFiltros(clienteId, domiciliarioId)
+    public List<PedidoDTO> listarPedidos(Long clienteId, Long domiciliarioId, String estado) {
+        return pedidoRepository.findByFiltros(clienteId, domiciliarioId, estado)
                 .stream()
                 .map(this::toDTO)
                 .toList();
@@ -579,6 +579,11 @@ public class PedidoService {
         if (p.getDomiciliarioId() != null) {
             usuarioRepository.findById(p.getDomiciliarioId())
                     .ifPresent(u -> dto.domiciliarioNombre = u.getNombre());
+        }
+
+        if (p.getClienteId() != null){
+            usuarioRepository.findById(p.getClienteId())
+                    .ifPresent(usuario -> dto.clienteNombre = usuario.getNombre());
         }
         return dto;
     }

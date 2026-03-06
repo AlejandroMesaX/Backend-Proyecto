@@ -21,9 +21,10 @@ public class AdminPedidoController {
         @GetMapping
         public ResponseEntity<List<PedidoDTO>> listar(
             @RequestParam(required = false) Long clienteId,
-            @RequestParam(required = false) Long domiciliarioId
+            @RequestParam(required = false) Long domiciliarioId,
+            @RequestParam(required = false) String estado
         ) {
-        return ResponseEntity.ok(pedidoService.listarPedidos(clienteId, domiciliarioId));
+        return ResponseEntity.ok(pedidoService.listarPedidos(clienteId, domiciliarioId, estado));
         }
 
     @DeleteMapping("/{id}")
