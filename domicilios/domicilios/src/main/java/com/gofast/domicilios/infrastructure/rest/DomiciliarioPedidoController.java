@@ -58,4 +58,11 @@ public class DomiciliarioPedidoController {
     public ResponseEntity<List<PedidoDTO>> historialEntregados(Authentication authentication) {
         return ResponseEntity.ok(pedidoService.misPedidosEntregadosComoDomiciliario(authentication));
     }
+
+    @GetMapping("/me/activo")
+    public ResponseEntity<PedidoDTO> pedidoActivo(Authentication authentication) {
+        return pedidoService.miPedidoActivo(authentication)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
 }

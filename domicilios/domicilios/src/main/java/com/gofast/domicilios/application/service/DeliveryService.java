@@ -1,6 +1,7 @@
 package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.DeliveryDTO;
+import com.gofast.domicilios.application.dto.DeliveryStatusDTO;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.exception.ForbiddenException;
 import com.gofast.domicilios.application.exception.NotFoundException;
@@ -67,6 +68,17 @@ public class DeliveryService {
 
         usuarioRepository.save(u);
         realtime.deliveryActualizado(toDto(u));
+    }
+
+    @Transactional(readOnly = true)
+    public DeliveryStatusDTO getEstado(String email) {
+        Usuario u = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(
+                        "Usuario no encontrado", "USUARIO_NOT_FOUND"));
+        boolean disponible = u.getEstadoDelivery() == EstadoDelivery.DISPONIBLE
+                || u.getEstadoDelivery() == EstadoDelivery.POR_RECOGER
+                || u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR;
+        return new DeliveryStatusDTO(disponible);
     }
 
 

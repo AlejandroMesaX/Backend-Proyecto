@@ -19,10 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Objects;
+import java.util.*;
+
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -138,6 +136,15 @@ public class PedidoService {
         pedidoRealtimePublisher.pedidoCreado(toDTO(guardado));
 
         return toDTO(guardado);
+    }
+
+    public Optional<PedidoDTO> miPedidoActivo(Authentication authentication) {
+        Long domiciliarioId = ((CustomUserDetails) authentication.getPrincipal()).getId();
+        return pedidoRepository.findByFiltros(null, domiciliarioId, null)
+                .stream()
+                .filter(p -> p.getEstado() == EstadoPedido.ASIGNADO || p.getEstado() == EstadoPedido.EN_CAMINO)
+                .findFirst()
+                .map(this::toDTO);
     }
 
     @Transactional(readOnly = true)
@@ -359,6 +366,7 @@ public class PedidoService {
         realtimePublisher.pedidoActualizado(dto);
         realtimePublisher.deliveryActualizado(deliveryService.toDto(u));
         realtimePublisher.pedidoParaCliente(pedido.getClienteId(), dto);
+        realtimePublisher.pedidoParaDelivery(u.getId(), dto);
 
         return dto;
     }
