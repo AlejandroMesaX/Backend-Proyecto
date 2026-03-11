@@ -4,10 +4,12 @@ import com.gofast.domicilios.application.dto.EditarUsuarioRequest;
 import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.application.exception.ForbiddenException;
+import com.gofast.domicilios.domain.model.EstadoDelivery;
 import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
+import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,12 @@ import java.util.stream.Collectors;
 public class UsuarioService {
     private final UsuarioRepositoryPort usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RealtimePublisher realtimePublisher;
 
-    public UsuarioService(UsuarioRepositoryPort usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepositoryPort usuarioRepository, PasswordEncoder passwordEncoder, RealtimePublisher realtimePublisher) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.realtimePublisher = realtimePublisher;
     }
 
     @Transactional
@@ -50,6 +54,7 @@ public class UsuarioService {
         usuario.setPasswordHash(passwordEncoder.encode(req.password()));
         usuario.setRol(rol);
         usuario.setActivo(true);
+        usuario.setEstadoDelivery(EstadoDelivery.DESCONECTADO);
 
         return toDTO(usuarioRepository.save(usuario));
     }
@@ -101,6 +106,7 @@ public class UsuarioService {
 
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
+        realtimePublisher.usuarioActualizado(toDTO(usuario));
     }
 
     @Transactional
@@ -123,6 +129,7 @@ public class UsuarioService {
 
         usuario.setActivo(true);
         usuarioRepository.save(usuario);
+        realtimePublisher.usuarioActualizado(toDTO(usuario));
     }
 
     @Transactional
@@ -160,6 +167,7 @@ public class UsuarioService {
         }
 
         usuarioRepository.save(usuario);
+        realtimePublisher.usuarioActualizado(toDTO(usuario));
     }
 
     @Transactional(readOnly = true)

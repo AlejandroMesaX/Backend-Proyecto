@@ -46,13 +46,13 @@ public class AdminUsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{usuarioId}")
-    public ResponseEntity<Void> eliminarUsuario(
+    @PatchMapping("/{usuarioId}/desactivar")
+    public ResponseEntity<Void> desactivarUsuario(
             @PathVariable Long usuarioId,
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         usuarioService.desactivarUsuario(usuarioId, currentUser.getId());
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{usuarioId}/reactivar")

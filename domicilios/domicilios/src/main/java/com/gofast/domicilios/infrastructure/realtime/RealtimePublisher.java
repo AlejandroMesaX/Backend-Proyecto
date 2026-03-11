@@ -3,6 +3,7 @@ package com.gofast.domicilios.infrastructure.realtime;
 import com.gofast.domicilios.application.dto.BarrioDTO;
 import com.gofast.domicilios.application.dto.DeliveryDTO;
 import com.gofast.domicilios.application.dto.PedidoDTO;
+import com.gofast.domicilios.application.dto.UsuarioDTO;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -38,5 +39,9 @@ public class RealtimePublisher {
     // Barrios: cuando se activa/desactiva un barrio
     public void barrioActualizado(BarrioDTO dto) {
         messaging.convertAndSend("/topic/barrios", dto);
+    }
+
+    public void usuarioActualizado(UsuarioDTO dto) {
+        messaging.convertAndSend("/topic/admin/usuarios", dto);
     }
 }
