@@ -9,6 +9,8 @@ public interface BarrioRepositoryPort {
 
     Optional<Barrio> findById(Long id);
 
+    List<Barrio> findAllActivos();
+
     Barrio save(Barrio barrio);
 
     boolean existsActivoByNombre(String nombre);

@@ -12,6 +12,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
+
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -24,7 +26,13 @@ public class BarrioService {
 
     private final BarrioRepositoryPort barrioRepository;
     private final ComunaRepositoryPort comunaRepository;
-    //private static final Logger log = LoggerFactory.getLogger(BarrioService.class);
+
+    private String normalizarNombre(String nombre) {
+        String sinEspacios = nombre.trim().replaceAll("\\s+", " ");
+        String sinTildes = Normalizer.normalize(sinEspacios, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}", "");
+        return sinTildes.replaceAll("\\s+", "").toLowerCase();
+    }
 
     public BarrioService(BarrioRepositoryPort barrioRepository,
                          ComunaRepositoryPort comunaRepository) {
@@ -34,12 +42,13 @@ public class BarrioService {
 
     @Transactional
     public Barrio crearBarrio(CrearBarrioRequest req) {
-        String nombre = req.nombre().trim();
+        // Normalizar: trim + colapsar espacios internos
+        String nombre = req.nombre().trim().replaceAll("\\s+", " ");
+        String nombreNormalizado = normalizarNombre(nombre);
 
-        if (barrioRepository.existsActivoByNombre(nombre)) {
-            log.warn(
-                    "Intento de crear barrio duplicado. nombre='{}'",
-                    nombre);
+        if (barrioRepository.findAllActivos().stream()
+                .anyMatch(b -> normalizarNombre(b.getNombre())
+                        .equals(nombreNormalizado))) {
             throw new BadRequestException(
                     "Ya existe un barrio activo con ese nombre",
                     "BARRIO_DUPLICADO",
@@ -48,25 +57,17 @@ public class BarrioService {
 
         Optional<Comuna> comuna = comunaRepository.findByNumero(req.comunaNumero());
         if (comuna.isEmpty()) {
-            log.warn(
-                    "Comuna no encontrada al crear barrio. comunaNumero='{}'",
-                    req.comunaNumero());
-            throw new NotFoundException(
-                    "Comuna no encontrada",
-                    "COMUNA_NOT_FOUND");
+            throw new NotFoundException("Comuna no encontrada", "COMUNA_NOT_FOUND");
         }
 
         Barrio barrio = new Barrio();
-        barrio.setNombre(req.nombre());
+        barrio.setNombre(nombre); // guarda con espacios normalizados
         barrio.setComuna(req.comunaNumero());
         barrio.setActivo(true);
 
         try {
             return barrioRepository.save(barrio);
         } catch (DataIntegrityViolationException e) {
-            log.warn(
-                    "Barrio duplicado detectado. nombre='{}'",
-                    req.nombre());
             throw new BadRequestException(
                     "Ya existe un barrio activo con ese nombre",
                     "BARRIO_DUPLICADO", "nombre");

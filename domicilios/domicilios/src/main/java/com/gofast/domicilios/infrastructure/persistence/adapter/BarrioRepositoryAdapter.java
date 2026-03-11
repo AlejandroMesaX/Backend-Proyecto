@@ -118,6 +118,16 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
         barrioJpaRepository.save(entity);
     }
 
+    @Override
+    public List<Barrio> findAllActivos() {
+        return barrioJpaRepository.findAll(
+                        (root, query, cb) -> cb.equal(root.get("activo"), true)
+                )
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
 
     private Barrio toDomain(BarrioEntity entity) {
         Barrio barrio = new Barrio();
