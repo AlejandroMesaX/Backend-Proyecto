@@ -7,6 +7,7 @@ import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.domain.repository.ComunaRepositoryPort;
+import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class BarrioService {
 
     private final BarrioRepositoryPort barrioRepository;
     private final ComunaRepositoryPort comunaRepository;
+    private final RealtimePublisher realtimePublisher;
 
     private String normalizarNombre(String nombre) {
         String sinEspacios = nombre.trim().replaceAll("\\s+", " ");
@@ -35,14 +37,15 @@ public class BarrioService {
     }
 
     public BarrioService(BarrioRepositoryPort barrioRepository,
-                         ComunaRepositoryPort comunaRepository) {
+                         ComunaRepositoryPort comunaRepository,
+                         RealtimePublisher realtimePublisher) {
         this.barrioRepository = barrioRepository;
         this.comunaRepository = comunaRepository;
+        this.realtimePublisher = realtimePublisher;
     }
 
     @Transactional
     public Barrio crearBarrio(CrearBarrioRequest req) {
-        // Normalizar: trim + colapsar espacios internos
         String nombre = req.nombre().trim().replaceAll("\\s+", " ");
         String nombreNormalizado = normalizarNombre(nombre);
 
@@ -155,6 +158,8 @@ public class BarrioService {
         }
 
         barrioRepository.desactivar(barrioId);
+        actual.setActivo(false);
+        realtimePublisher.barrioActualizado(toDTO(actual));
     }
 
     @Transactional
@@ -190,6 +195,8 @@ public class BarrioService {
         }
 
         barrioRepository.reactivar(barrioId);
+        actual.setActivo(true);
+        realtimePublisher.barrioActualizado(toDTO(actual));
     }
 
     private BarrioDTO toDTO(Barrio b) {

@@ -36,7 +36,6 @@ public class RealtimePublisher {
         messaging.convertAndSend("/topic/cliente/" + clienteId + "/pedidos", dto);
     }
 
-    // Barrios: cuando se activa/desactiva un barrio
     public void barrioActualizado(BarrioDTO dto) {
         messaging.convertAndSend("/topic/barrios", dto);
     }
