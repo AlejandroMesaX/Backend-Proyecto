@@ -3,9 +3,7 @@ package com.gofast.domicilios.infrastructure.persistence.jpa;
 import com.gofast.domicilios.infrastructure.persistence.entity.BarrioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-
 import java.util.Optional;
-import java.util.List;
 
 public interface BarrioJpaRepository extends JpaRepository<BarrioEntity, Long>,
         JpaSpecificationExecutor<BarrioEntity>{

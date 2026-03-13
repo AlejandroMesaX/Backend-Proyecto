@@ -1,6 +1,5 @@
 package com.gofast.domicilios.infrastructure.realtime;
 
-import com.gofast.domicilios.infrastructure.realtime.JwtStompAuthChannelInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -24,7 +23,6 @@ public class WebSocketSecurityConfig
             MessageSecurityMetadataSourceRegistry messages) {
 
         messages
-                // 🔓 ciclo de vida WS
                 .simpTypeMatchers(
                         SimpMessageType.CONNECT,
                         SimpMessageType.HEARTBEAT,
@@ -32,11 +30,9 @@ public class WebSocketSecurityConfig
                         SimpMessageType.UNSUBSCRIBE
                 ).permitAll()
 
-                // 🔐 SOLO ADMIN
                 .simpSubscribeDestMatchers("/topic/admin/**")
                 .hasRole("ADMIN")
 
-                // opcional
                 .simpSubscribeDestMatchers("/topic/**")
                 .authenticated()
 
@@ -51,18 +47,15 @@ public class WebSocketSecurityConfig
     protected void customizeClientInboundChannel(
             ChannelRegistration registration) {
 
-        // Propaga SecurityContext entre threads
         registration.interceptors(
                 new SecurityContextChannelInterceptor());
 
-        // Tu interceptor JWT
         registration.interceptors(
                 jwtStompAuthChannelInterceptor);
     }
 
     @Override
     protected boolean sameOriginDisabled() {
-        // 🔑 ESTO DESACTIVA CSRF EN STOMP
         return true;
     }
 }

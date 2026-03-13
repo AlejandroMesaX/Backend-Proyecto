@@ -4,7 +4,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -36,13 +35,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), ex.getCode(), null);
     }
 
-    // ✅ Adaptado: mismo formato que el resto
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, Object>> handleBodyMissing(HttpMessageNotReadableException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, "El body es obligatorio", "BODY_REQUERIDO", null);
     }
 
-    // ✅ Nuevo: captura errores de @Valid
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidacion(MethodArgumentNotValidException ex) {
         String field = ex.getBindingResult()
@@ -62,7 +59,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, mensaje, "VALIDACION_FALLIDA", field);
     }
 
-    // ✅ Nuevo: captura cualquier error inesperado
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenerico(Exception ex) {
         log.error("Error inesperado", ex);

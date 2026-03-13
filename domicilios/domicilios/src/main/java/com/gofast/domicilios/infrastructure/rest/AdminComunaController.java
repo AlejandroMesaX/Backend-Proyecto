@@ -1,16 +1,13 @@
 package com.gofast.domicilios.infrastructure.rest;
 
-
 import com.gofast.domicilios.application.service.ComunaService;
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.application.dto.CrearComunaRequest;
 import com.gofast.domicilios.application.dto.EditarComunaRequest;
-
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -38,6 +35,5 @@ public class AdminComunaController {
                                        @RequestBody @Valid EditarComunaRequest req) {
         comunaService.editarComuna(id, req);
         return ResponseEntity.ok().build();
-        //noContent()
     }
 }

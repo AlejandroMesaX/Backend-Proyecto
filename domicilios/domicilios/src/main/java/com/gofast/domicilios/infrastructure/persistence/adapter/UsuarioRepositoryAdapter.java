@@ -44,12 +44,6 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
                 .collect(Collectors.toList());
     }
 
-//    @Override
-//    public void deleteById(Long id) {
-//        jpa.deleteById(id);
-//    }
-
-
     @Override
     public List<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo) {
 

@@ -1,4 +1,4 @@
-package com.gofast.domicilios.domain.service;
+package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.domain.model.Barrio;

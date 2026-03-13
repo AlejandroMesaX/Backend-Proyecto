@@ -1,7 +1,6 @@
 package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.service.DeliveryPedidosService;
-import com.gofast.domicilios.application.service.DeliveryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;

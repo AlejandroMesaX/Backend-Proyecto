@@ -1,6 +1,5 @@
 package com.gofast.domicilios.application.service;
 
-
 import com.gofast.domicilios.application.dto.*;
 import com.gofast.domicilios.application.exception.*;
 import com.gofast.domicilios.domain.model.Barrio;
@@ -13,8 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -23,9 +20,9 @@ public class DireccionService {
 
     private final DireccionRepositoryPort direccionRepo;
     private final BarrioRepositoryPort barrioRepo;
-    //private static final Logger log = LoggerFactory.getLogger(DireccionService.class);
 
-    public DireccionService(DireccionRepositoryPort direccionRepo, BarrioRepositoryPort barrioRepo) {
+    public DireccionService(DireccionRepositoryPort direccionRepo,
+                            BarrioRepositoryPort barrioRepo) {
         this.direccionRepo = direccionRepo;
         this.barrioRepo = barrioRepo;
     }
@@ -102,7 +99,6 @@ public class DireccionService {
             if (!barrio.isActivo()) {
                 throw new BadRequestException("El barrio está inactivo", "BARRIO_INACTIVO", "barrioId");
             }
-//            d.setBarrioId(req.barrioId());
         }
 
         if (req.direccionRecogida() != null && !req.direccionRecogida().isBlank()) {
@@ -151,7 +147,7 @@ public class DireccionService {
     private DireccionDTO toDTO(Direccion d) {
         DireccionDTO dto = new DireccionDTO();
         dto.id = d.getId();
-        dto.barrio = d.getBarrio();    // ✅ nombre del barrio
+        dto.barrio = d.getBarrio();
         dto.direccionRecogida = d.getDireccionRecogida();
         dto.telefonoContacto = d.getTelefonoContacto();
         dto.activo = d.getActivo();

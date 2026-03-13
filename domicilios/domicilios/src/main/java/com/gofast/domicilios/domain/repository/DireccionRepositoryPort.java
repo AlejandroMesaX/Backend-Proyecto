@@ -1,7 +1,6 @@
 package com.gofast.domicilios.domain.repository;
 
 import com.gofast.domicilios.domain.model.Direccion;
-
 import java.util.List;
 import java.util.Optional;
 

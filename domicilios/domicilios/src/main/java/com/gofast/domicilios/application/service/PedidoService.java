@@ -9,7 +9,6 @@ import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
-import com.gofast.domicilios.domain.service.TarifaDomicilioService;
 import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;

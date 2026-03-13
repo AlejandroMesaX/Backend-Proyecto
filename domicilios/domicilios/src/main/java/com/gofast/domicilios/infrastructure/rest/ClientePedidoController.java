@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,7 +20,6 @@ public class ClientePedidoController {
         this.pedidoService = pedidoService;
     }
 
-    // Crear pedido cliente
     @PostMapping
     public ResponseEntity<PedidoDTO> crearPedido(@AuthenticationPrincipal CustomUserDetails currentUser,
                                                  @RequestBody @Valid CrearPedidoRequest req) {

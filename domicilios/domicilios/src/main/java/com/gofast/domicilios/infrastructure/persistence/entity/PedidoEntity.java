@@ -2,7 +2,6 @@ package com.gofast.domicilios.infrastructure.persistence.entity;
 
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

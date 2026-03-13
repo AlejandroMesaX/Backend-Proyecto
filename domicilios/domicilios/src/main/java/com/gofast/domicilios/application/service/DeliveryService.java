@@ -13,9 +13,6 @@ import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -23,9 +20,9 @@ import java.time.LocalDateTime;
 public class DeliveryService {
     private final UsuarioRepositoryPort usuarioRepository;
     private final RealtimePublisher realtime;
-    //private static final Logger log = LoggerFactory.getLogger(DeliveryService.class);
 
-    public DeliveryService(UsuarioRepositoryPort usuarioRepository, RealtimePublisher realtime) {
+    public DeliveryService(UsuarioRepositoryPort usuarioRepository,
+                           RealtimePublisher realtime) {
         this.usuarioRepository = usuarioRepository;
         this.realtime = realtime;
     }

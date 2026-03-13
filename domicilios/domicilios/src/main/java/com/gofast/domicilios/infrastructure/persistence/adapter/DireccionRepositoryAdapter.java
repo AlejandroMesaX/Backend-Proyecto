@@ -3,12 +3,9 @@ package com.gofast.domicilios.infrastructure.persistence.adapter;
 
 import com.gofast.domicilios.domain.model.Direccion;
 import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
-import com.gofast.domicilios.infrastructure.persistence.entity.BarrioEntity;
 import com.gofast.domicilios.infrastructure.persistence.entity.DireccionEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.DireccionJpaRepository;
-
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -72,7 +69,7 @@ public class DireccionRepositoryAdapter implements DireccionRepositoryPort {
         Direccion d = new Direccion();
         d.setId(e.getId());
         d.setClienteId(e.getClienteId());
-        d.setBarrio(e.getBarrio());        // ✅ esta línea faltaba
+        d.setBarrio(e.getBarrio());
         d.setDireccionRecogida(e.getDireccionRecogida());
         d.setTelefonoContacto(e.getTelefonoContacto());
         d.setActivo(e.isActivo());

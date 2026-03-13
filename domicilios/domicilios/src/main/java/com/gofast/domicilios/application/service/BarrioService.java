@@ -13,12 +13,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
-
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -64,7 +61,7 @@ public class BarrioService {
         }
 
         Barrio barrio = new Barrio();
-        barrio.setNombre(nombre); // guarda con espacios normalizados
+        barrio.setNombre(nombre);
         barrio.setComuna(req.comunaNumero());
         barrio.setActivo(true);
 

@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public record DeliveryDTO(
         Long id,
-        String nombre,   // ✅ nombre primero
-        String email,    // ✅ email segundo
+        String nombre,
+        String email,
         String estadoDelivery,
         LocalDateTime disponibleDesde
 ) {}

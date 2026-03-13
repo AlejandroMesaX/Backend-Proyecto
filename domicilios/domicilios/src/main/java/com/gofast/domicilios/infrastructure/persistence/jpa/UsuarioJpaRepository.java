@@ -1,11 +1,9 @@
 package com.gofast.domicilios.infrastructure.persistence.jpa;
 
-import com.gofast.domicilios.domain.model.Usuario;
 import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
-
 import java.util.List;
 import java.util.Optional;
 

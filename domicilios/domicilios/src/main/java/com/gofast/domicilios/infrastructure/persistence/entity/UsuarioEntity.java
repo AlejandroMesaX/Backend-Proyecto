@@ -3,7 +3,6 @@ package com.gofast.domicilios.infrastructure.persistence.entity;
 import com.gofast.domicilios.domain.model.EstadoDelivery;
 import com.gofast.domicilios.domain.model.Rol;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity

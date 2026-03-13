@@ -1,14 +1,13 @@
 package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.dto.TarifaResponse;
-import com.gofast.domicilios.domain.service.TarifaDomicilioService;
+import com.gofast.domicilios.application.service.TarifaDomicilioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.math.BigDecimal;
 
 @RestController

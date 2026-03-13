@@ -3,11 +3,9 @@ package com.gofast.domicilios.infrastructure.rest;
 import com.gofast.domicilios.application.dto.DeliveryDTO;
 import com.gofast.domicilios.application.service.DeliveryService;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
-import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
 
 @RestController

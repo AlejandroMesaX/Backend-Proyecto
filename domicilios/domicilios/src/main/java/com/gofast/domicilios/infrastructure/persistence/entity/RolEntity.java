@@ -1,4 +1,4 @@
-package com.gofast.domicilios.infrastructure.entity;
+package com.gofast.domicilios.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 

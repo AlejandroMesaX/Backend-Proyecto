@@ -15,9 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,7 +24,9 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final RealtimePublisher realtimePublisher;
 
-    public UsuarioService(UsuarioRepositoryPort usuarioRepository, PasswordEncoder passwordEncoder, RealtimePublisher realtimePublisher) {
+    public UsuarioService(UsuarioRepositoryPort usuarioRepository,
+                          PasswordEncoder passwordEncoder,
+                          RealtimePublisher realtimePublisher) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.realtimePublisher = realtimePublisher;

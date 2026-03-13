@@ -5,7 +5,6 @@ import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.domain.repository.ComunaRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.ComunaEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.ComunaJpaRepository;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;

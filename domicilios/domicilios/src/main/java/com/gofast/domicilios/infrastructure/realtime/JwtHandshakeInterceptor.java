@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
-
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
@@ -32,10 +31,8 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) {
 
-        // Leer Authorization del handshake HTTP (Upgrade)
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        // Alternativa: token por query param ?token= (por si el browser no manda headers en WS)
         if ((authHeader == null || authHeader.isBlank()) && request instanceof ServletServerHttpRequest sreq) {
             HttpServletRequest servletReq = sreq.getServletRequest();
             String tokenParam = servletReq.getParameter("token");

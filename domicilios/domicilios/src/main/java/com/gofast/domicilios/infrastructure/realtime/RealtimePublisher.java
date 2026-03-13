@@ -16,7 +16,6 @@ public class RealtimePublisher {
         this.messaging = messaging;
     }
 
-    // Admin topics
     public void pedidoActualizado(PedidoDTO dto) {
 
         messaging.convertAndSend("/topic/admin/pedidos", dto);
@@ -27,7 +26,6 @@ public class RealtimePublisher {
         messaging.convertAndSend("/topic/admin/domiciliarios", dto);
     }
 
-    // Delivery topic por id (no requiere email en DTO)
     public void pedidoParaDelivery(Long deliveryId, PedidoDTO dto) {
         messaging.convertAndSend("/topic/delivery/" + deliveryId + "/pedidos", dto);
     }

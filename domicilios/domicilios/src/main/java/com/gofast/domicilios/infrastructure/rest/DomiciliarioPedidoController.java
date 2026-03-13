@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -21,7 +20,6 @@ public class DomiciliarioPedidoController {
         this.pedidoService = pedidoService;
     }
 
-    // ✅ Ver MIS pedidos (solo domiciliario logueado)
     @GetMapping
     public ResponseEntity<List<PedidoDTO>> misPedidos(
             Authentication authentication,
@@ -32,7 +30,6 @@ public class DomiciliarioPedidoController {
         );
     }
 
-    // ✅ Cambiar estado (solo si el pedido es mío)
     @PatchMapping("/{pedidoId}/estado")
     public ResponseEntity<PedidoDTO> cambiarEstado(
             Authentication authentication,

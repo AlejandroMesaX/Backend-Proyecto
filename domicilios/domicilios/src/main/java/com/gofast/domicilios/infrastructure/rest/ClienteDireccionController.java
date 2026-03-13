@@ -2,11 +2,9 @@ package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.dto.*;
 import com.gofast.domicilios.application.service.DireccionService;
-
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController

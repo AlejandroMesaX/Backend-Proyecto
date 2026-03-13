@@ -10,7 +10,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,8 +18,6 @@ public class JwtStompAuthChannelInterceptor implements ChannelInterceptor {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
-
-    // ✅ Auth cache por sesión STOMP
     private final Map<String, Authentication> sessionAuth = new ConcurrentHashMap<>();
 
     public JwtStompAuthChannelInterceptor(JwtTokenProvider jwtTokenProvider,
@@ -34,7 +31,6 @@ public class JwtStompAuthChannelInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         String sessionId = accessor.getSessionId();
 
-        // ✅ Para cualquier frame posterior, reinyecta el auth guardado
         if (sessionId != null && accessor.getUser() == null) {
             Authentication saved = sessionAuth.get(sessionId);
             if (saved != null) {
@@ -43,7 +39,6 @@ public class JwtStompAuthChannelInterceptor implements ChannelInterceptor {
             }
         }
 
-        // ✅ En CONNECT, crea el auth desde JWT y guárdalo
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String authHeader = accessor.getFirstNativeHeader("Authorization");
 
@@ -68,12 +63,10 @@ public class JwtStompAuthChannelInterceptor implements ChannelInterceptor {
             }
         }
 
-        // ✅ Limpieza
         if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
             if (sessionId != null) sessionAuth.remove(sessionId);
         }
 
-        // ✅ DEBUG CLAVE: mira quién llega en SUBSCRIBE
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             System.out.println("WS SUBSCRIBE session=" + accessor.getSessionId()
                     + " dest=" + accessor.getDestination()

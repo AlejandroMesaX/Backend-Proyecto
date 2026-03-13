@@ -1,6 +1,5 @@
 package com.gofast.domicilios.application.service;
 
-
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.domain.repository.ComunaRepositoryPort;
 import com.gofast.domicilios.application.dto.CrearComunaRequest;
@@ -8,8 +7,6 @@ import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.dto.EditarComunaRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +17,6 @@ import java.util.List;
 @Service
 public class ComunaService {
     private final ComunaRepositoryPort comunaRepository;
-    //private static final Logger log = LoggerFactory.getLogger(ComunaService.class);
 
     public ComunaService(ComunaRepositoryPort comunaRepository) {
         this.comunaRepository = comunaRepository;

@@ -9,7 +9,6 @@ import com.gofast.domicilios.infrastructure.persistence.jpa.BarrioJpaRepository;
 import com.gofast.domicilios.infrastructure.persistence.jpa.ComunaJpaRepository;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,7 +18,8 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
     private final BarrioJpaRepository barrioJpaRepository;
     private final ComunaJpaRepository comunaJpaRepository;
 
-    public BarrioRepositoryAdapter(BarrioJpaRepository barrioJpaRepository, ComunaJpaRepository comunaJpaRepository) {
+    public BarrioRepositoryAdapter(BarrioJpaRepository barrioJpaRepository,
+                                   ComunaJpaRepository comunaJpaRepository) {
         this.barrioJpaRepository = barrioJpaRepository;
         this.comunaJpaRepository = comunaJpaRepository;
     }
