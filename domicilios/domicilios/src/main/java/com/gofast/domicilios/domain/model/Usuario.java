@@ -11,6 +11,9 @@ public class Usuario {
     private boolean activo;
     private EstadoDelivery estadoDelivery;
     private LocalDateTime disponibleDesde;
+    private String codigoVerificacion;
+    private LocalDateTime codigoExpiracion;
+    private boolean emailVerificado;
 
     public Usuario() {}
 
@@ -85,5 +88,29 @@ public class Usuario {
 
     public void setDisponibleDesde(LocalDateTime disponibleDesde) {
         this.disponibleDesde = disponibleDesde;
+    }
+
+    public String getCodigoVerificacion() {
+        return codigoVerificacion;
+    }
+
+    public void setCodigoVerificacion(String codigoVerificacion) {
+        this.codigoVerificacion = codigoVerificacion;
+    }
+
+    public LocalDateTime getCodigoExpiracion() {
+        return codigoExpiracion;
+    }
+
+    public void setCodigoExpiracion(LocalDateTime codigoExpiracion) {
+        this.codigoExpiracion = codigoExpiracion;
+    }
+
+    public boolean isEmailVerificado() {
+        return emailVerificado;
+    }
+
+    public void setEmailVerificado(boolean emailVerificado) {
+        this.emailVerificado = emailVerificado;
     }
 }

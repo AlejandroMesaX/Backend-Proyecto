@@ -32,6 +32,8 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**", "/ws").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login",
+                                "/api/auth/verify", "/api/auth/resend-code").permitAll()
                         .anyRequest().authenticated()
                 );
 

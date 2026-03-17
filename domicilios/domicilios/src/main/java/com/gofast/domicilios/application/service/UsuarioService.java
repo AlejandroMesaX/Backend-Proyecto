@@ -1,6 +1,7 @@
 package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.EditarUsuarioRequest;
+import com.gofast.domicilios.application.dto.LoginResponse;
 import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.application.exception.ForbiddenException;
@@ -11,11 +12,16 @@ import com.gofast.domicilios.application.exception.NotFoundException;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import com.gofast.domicilios.application.service.EmailService;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -23,40 +29,85 @@ public class UsuarioService {
     private final UsuarioRepositoryPort usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final RealtimePublisher realtimePublisher;
+    private final EmailService emailService;
 
     public UsuarioService(UsuarioRepositoryPort usuarioRepository,
                           PasswordEncoder passwordEncoder,
-                          RealtimePublisher realtimePublisher) {
+                          RealtimePublisher realtimePublisher,
+                          EmailService emailService) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.realtimePublisher = realtimePublisher;
+        this.emailService = emailService;
     }
 
     @Transactional
     public UsuarioDTO registrarUsuario(RegisterUsuarioRequest req) {
-        Rol rol;
-        try {
-            rol = Rol.valueOf(req.rol().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Rol inválido", "ROL_INVALIDO", "rol");
-        }
-
+        // Validar email único
         if (usuarioRepository.findByEmail(req.email()).isPresent()) {
-            log.warn("Intento de registro con email ya existente");
-            throw new BadRequestException(
-                    "El email ya está registrado",
-                    "EMAIL_DUPLICADO", "email");
+            throw new RuntimeException("Ya existe una cuenta con ese correo.");
         }
 
         Usuario usuario = new Usuario();
         usuario.setNombre(req.nombre());
         usuario.setEmail(req.email());
         usuario.setPasswordHash(passwordEncoder.encode(req.password()));
-        usuario.setRol(rol);
-        usuario.setActivo(true);
-        usuario.setEstadoDelivery(EstadoDelivery.DESCONECTADO);
+        usuario.setRol(Rol.valueOf(req.rol()));
+        usuario.setActivo(false);           // inactivo hasta verificar
+        usuario.setEmailVerificado(false);
+        usuario.setEstadoDelivery(EstadoDelivery.DESCONECTADO); // ← agregar esta línea
 
-        return toDTO(usuarioRepository.save(usuario));
+        // Generar código de 6 dígitos
+        String codigo = generarCodigo();
+        usuario.setCodigoVerificacion(codigo);
+        usuario.setCodigoExpiracion(LocalDateTime.now().plusMinutes(15));
+
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        // Enviar correo
+        emailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
+
+        return toDTO(guardado);
+    }
+
+    public Usuario verificarYActivar(String email, String code) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+
+        if (usuario.isEmailVerificado())
+            throw new RuntimeException("Esta cuenta ya fue verificada.");
+        if (!usuario.getCodigoVerificacion().equals(code))
+            throw new RuntimeException("Código incorrecto.");
+        if (LocalDateTime.now().isAfter(usuario.getCodigoExpiracion()))
+            throw new RuntimeException("El código expiró. Solicita uno nuevo.");
+
+        usuario.setEmailVerificado(true);
+        usuario.setActivo(true);
+        usuario.setCodigoVerificacion(null);
+        usuario.setCodigoExpiracion(null);
+        return usuarioRepository.save(usuario);
+    }
+
+    public void reenviarCodigo(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
+
+        if (usuario.isEmailVerificado()) {
+            throw new RuntimeException("Esta cuenta ya fue verificada.");
+        }
+
+        String codigo = generarCodigo();
+        usuario.setCodigoVerificacion(codigo);
+        usuario.setCodigoExpiracion(LocalDateTime.now().plusMinutes(15));
+        usuarioRepository.save(usuario);
+
+        emailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
+    }
+
+    private String generarCodigo() {
+        SecureRandom random = new SecureRandom();
+        int numero = random.nextInt(900000) + 100000; // 100000–999999
+        return String.valueOf(numero);
     }
 
     @Transactional(readOnly = true)
@@ -70,6 +121,14 @@ public class UsuarioService {
                             "Usuario no encontrado",
                             "USUARIO_NOT_FOUND");
                 });
+    }
+
+    @Transactional(readOnly = true)
+    public Usuario obtenerEntidadPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(
+                        "Usuario no encontrado",
+                        "USUARIO_NOT_FOUND"));
     }
 
     @Transactional

@@ -95,6 +95,9 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         e.setActivo(u.isActivo());
         e.setDisponibleDesde(u.getDisponibleDesde());
         e.setEstadoDelivery(u.getEstadoDelivery());
+        e.setEmailVerificado(u.isEmailVerificado());
+        e.setCodigoVerificacion(u.getCodigoVerificacion());
+        e.setCodigoExpiracion(u.getCodigoExpiracion());
         return e;
     }
 
@@ -108,6 +111,9 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
         u.setActivo(e.isActivo());
         u.setEstadoDelivery(e.getEstadoDelivery());
         u.setDisponibleDesde(e.getDisponibleDesde());
+        u.setEmailVerificado(e.isEmailVerificado());
+        u.setCodigoVerificacion(e.getCodigoVerificacion());
+        u.setCodigoExpiracion(e.getCodigoExpiracion());
         return u;
     }
 }

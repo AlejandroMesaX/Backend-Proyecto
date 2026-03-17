@@ -32,6 +32,15 @@ public class UsuarioEntity {
 
     private LocalDateTime disponibleDesde;
 
+    @Column(name = "email_verificado", nullable = false)
+    private boolean emailVerificado = false;
+
+    @Column(name = "codigo_verificacion")
+    private String codigoVerificacion;
+
+    @Column(name = "codigo_expiracion")
+    private LocalDateTime codigoExpiracion;
+
     public Long getId() {
         return id;
     }
@@ -94,5 +103,29 @@ public class UsuarioEntity {
 
     public void setDisponibleDesde(LocalDateTime disponibleDesde) {
         this.disponibleDesde = disponibleDesde;
+    }
+
+    public boolean isEmailVerificado() {
+        return emailVerificado;
+    }
+
+    public void setEmailVerificado(boolean emailVerificado) {
+        this.emailVerificado = emailVerificado;
+    }
+
+    public String getCodigoVerificacion() {
+        return codigoVerificacion;
+    }
+
+    public void setCodigoVerificacion(String codigoVerificacion) {
+        this.codigoVerificacion = codigoVerificacion;
+    }
+
+    public LocalDateTime getCodigoExpiracion() {
+        return codigoExpiracion;
+    }
+
+    public void setCodigoExpiracion(LocalDateTime codigoExpiracion) {
+        this.codigoExpiracion = codigoExpiracion;
     }
 }
