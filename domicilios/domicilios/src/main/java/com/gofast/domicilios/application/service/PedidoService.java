@@ -236,10 +236,10 @@ public class PedidoService {
                     "domiciliario");
         }
 
-        if (domi.getEstadoDelivery() != EstadoDelivery.DISPONIBLE) {
+        if (domi.getEstadoDelivery() == null) {
             throw new BadRequestException(
-                    "El domiciliario no está disponible",
-                    "DOMICILIARIO_NO_DISPONIBLE",
+                    "El domiciliario está desconectado",
+                    "DOMICILIARIO_DESCONECTADO",
                     "domiciliario");
         }
 
@@ -255,9 +255,11 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.ASIGNADO);
         Pedido saved = pedidoRepository.save(pedido);
 
-        domi.setEstadoDelivery(EstadoDelivery.POR_RECOGER);
-        domi.setDisponibleDesde(null);
-        usuarioRepository.save(domi);
+        if (domi.getEstadoDelivery() == EstadoDelivery.DISPONIBLE) {
+            domi.setEstadoDelivery(EstadoDelivery.POR_RECOGER);
+            domi.setDisponibleDesde(null);
+            usuarioRepository.save(domi);
+        }
 
         PedidoDTO dto = toDTO(saved);
         realtimePublisher.pedidoActualizado(dto);
@@ -266,6 +268,29 @@ public class PedidoService {
         realtimePublisher.pedidoParaCliente(pedido.getClienteId(), dto);
 
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<PedidoDTO> misPedidosActivos(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new ForbiddenException("No autenticado", "NO_AUTENTICADO");
+        }
+
+        Usuario u = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ForbiddenException(
+                        "Usuario no encontrado",
+                        "USUARIO_NOT_FOUND"));
+
+        if (u.getRol() != Rol.DELIVERY) {
+            throw new ForbiddenException(
+                    "Solo domiciliarios pueden ver esta ruta",
+                    "ROL_NO_PERMITIDO");
+        }
+
+        return pedidoRepository.findByDomiciliarioIdAndEstadoIn(
+                u.getId(),
+                List.of(EstadoPedido.ASIGNADO, EstadoPedido.EN_CAMINO)
+        ).stream().map(this::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
@@ -342,18 +367,29 @@ public class PedidoService {
                     "PEDIDO_NO_ASIGNADO");
         }
 
-        if (pedido.getEstado() == EstadoPedido.ASIGNADO
-                && u.getEstadoDelivery() == EstadoDelivery.POR_RECOGER) {
+        if (pedido.getEstado() == EstadoPedido.ASIGNADO) {
             pedido.setEstado(EstadoPedido.EN_CAMINO);
-            u.setEstadoDelivery(EstadoDelivery.POR_ENTREGAR);
-        } else if (pedido.getEstado() == EstadoPedido.EN_CAMINO
-                && u.getEstadoDelivery() == EstadoDelivery.POR_ENTREGAR) {
+            // Solo cambiar estado del domi si todos sus pedidos activos están EN_CAMINO
+            boolean todosEnCamino = pedidoRepository
+                    .findByDomiciliarioIdAndEstadoIn(u.getId(), List.of(EstadoPedido.ASIGNADO))
+                    .stream().allMatch(p -> p.getId().equals(pedidoId));
+            if (todosEnCamino) {
+                u.setEstadoDelivery(EstadoDelivery.POR_ENTREGAR);
+            }
+        } else if (pedido.getEstado() == EstadoPedido.EN_CAMINO) {
             pedido.setEstado(EstadoPedido.ENTREGADO);
-            u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
-            u.setDisponibleDesde(LocalDateTime.now());
+            // Solo poner DISPONIBLE si no quedan más pedidos activos
+            long pedidosRestantes = pedidoRepository
+                    .findByDomiciliarioIdAndEstadoIn(u.getId(),
+                            List.of(EstadoPedido.ASIGNADO, EstadoPedido.EN_CAMINO))
+                    .stream().filter(p -> !p.getId().equals(pedidoId)).count();
+            if (pedidosRestantes == 0) {
+                u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
+                u.setDisponibleDesde(LocalDateTime.now());
+            }
         } else {
             throw new BadRequestException(
-                    "La transición de estado no es válida en el estado actual",
+                    "La transición de estado no es válida",
                     "TRANSICION_INVALIDA",
                     "estado");
         }

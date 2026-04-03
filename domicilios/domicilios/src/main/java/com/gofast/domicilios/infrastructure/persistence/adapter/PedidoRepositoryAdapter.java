@@ -110,6 +110,26 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
     }
 
     @Override
+    public List<Pedido> findByDomiciliarioIdAndEstadoIn(Long domiciliarioId, List<EstadoPedido> estados) {
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
+
+        spec = spec.and((root, query, cb) ->
+                cb.equal(root.get("domiciliarioId"), domiciliarioId)
+        );
+
+        if (estados != null && !estados.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    root.get("estado").in(estados)
+            );
+        }
+
+        return jpa.findAll(spec)
+                .stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Pedido> findAll() {
         return jpa.findAll()
                 .stream()

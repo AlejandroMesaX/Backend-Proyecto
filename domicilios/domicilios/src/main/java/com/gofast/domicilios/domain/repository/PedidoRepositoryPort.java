@@ -23,6 +23,8 @@ public interface PedidoRepositoryPort {
 
     List<Pedido> findEntregadosByDomiciliarioId(Long domiciliarioId);
 
+    List<Pedido> findByDomiciliarioIdAndEstadoIn(Long domiciliarioId, List<EstadoPedido> estados);
+
     List<Pedido> findAll();
 
 }
