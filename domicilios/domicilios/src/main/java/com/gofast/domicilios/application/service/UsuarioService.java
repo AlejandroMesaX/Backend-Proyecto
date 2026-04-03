@@ -43,7 +43,6 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioDTO registrarUsuario(RegisterUsuarioRequest req) {
-        // Validar email único
         if (usuarioRepository.findByEmail(req.email()).isPresent()) {
             throw new RuntimeException("Ya existe una cuenta con ese correo.");
         }
@@ -57,16 +56,33 @@ public class UsuarioService {
         usuario.setEmailVerificado(false);
         usuario.setEstadoDelivery(EstadoDelivery.DESCONECTADO); // ← agregar esta línea
 
-        // Generar código de 6 dígitos
         String codigo = generarCodigo();
         usuario.setCodigoVerificacion(codigo);
         usuario.setCodigoExpiracion(LocalDateTime.now().plusMinutes(15));
 
         Usuario guardado = usuarioRepository.save(usuario);
 
-        // Enviar correo
         emailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
 
+        return toDTO(guardado);
+    }
+
+    @Transactional
+    public UsuarioDTO crearUsuarioPorAdmin(RegisterUsuarioRequest req) {
+        if (usuarioRepository.findByEmail(req.email()).isPresent()) {
+            throw new RuntimeException("Ya existe una cuenta con ese correo.");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setNombre(req.nombre());
+        usuario.setEmail(req.email());
+        usuario.setPasswordHash(passwordEncoder.encode(req.password()));
+        usuario.setRol(Rol.valueOf(req.rol()));
+        usuario.setActivo(true);               // activo de una vez
+        usuario.setEmailVerificado(true);      // sin verificación
+        usuario.setEstadoDelivery(EstadoDelivery.DESCONECTADO);
+
+        Usuario guardado = usuarioRepository.save(usuario);
         return toDTO(guardado);
     }
 

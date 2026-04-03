@@ -32,7 +32,7 @@ public class AdminUsuarioController {
 
     @PostMapping
     public ResponseEntity<UsuarioDTO> crearUsuario(@RequestBody RegisterUsuarioRequest req) {
-        UsuarioDTO creado = usuarioService.registrarUsuario(req);
+        UsuarioDTO creado = usuarioService.crearUsuarioPorAdmin(req); // ← cambia registrarUsuario por crearUsuarioPorAdmin
         return ResponseEntity.ok(creado);
     }
 

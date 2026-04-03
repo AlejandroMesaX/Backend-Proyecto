@@ -99,6 +99,8 @@ public class DireccionService {
             if (!barrio.isActivo()) {
                 throw new BadRequestException("El barrio está inactivo", "BARRIO_INACTIVO", "barrioId");
             }
+
+            d.setBarrio(barrio.getNombre());
         }
 
         if (req.direccionRecogida() != null && !req.direccionRecogida().isBlank()) {

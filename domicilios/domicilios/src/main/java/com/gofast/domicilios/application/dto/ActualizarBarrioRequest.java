@@ -7,6 +7,7 @@ public record ActualizarBarrioRequest(
         @NotBlank(message = "El nombre es obligatorio")
         String nombre,
         @NotNull(message = "La comuna es obligatoria")
-        Integer comunaNumero
+        Integer comunaNumero,
+        Boolean activo
 ) {
 }

@@ -65,6 +65,8 @@ public class BarrioService {
         barrio.setComuna(req.comunaNumero());
         barrio.setActivo(true);
 
+        realtimePublisher.barrioActualizado(toDTO(barrio));
+
         try {
             return barrioRepository.save(barrio);
         } catch (DataIntegrityViolationException e) {
@@ -127,6 +129,12 @@ public class BarrioService {
             }
             actual.setComuna(req.comunaNumero());
         }
+
+        if (req.activo() != null) {
+            actual.setActivo(req.activo());
+        }
+
+        realtimePublisher.barrioActualizado(toDTO(actual));
 
         return barrioRepository.save(actual);
     }
