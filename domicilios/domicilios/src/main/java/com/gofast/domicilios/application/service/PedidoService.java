@@ -35,7 +35,11 @@ public class PedidoService {
     private final RealtimePublisher realtimePublisher;
     private final DeliveryService deliveryService;
     private static final Set<EstadoPedido> PERMITIR_CANCELADO_DESDE =
-            EnumSet.of(EstadoPedido.CREADO, EstadoPedido.ASIGNADO);
+            EnumSet.of(
+                    EstadoPedido.CREADO,
+                    EstadoPedido.ASIGNADO,
+                    EstadoPedido.EN_CAMINO,
+                    EstadoPedido.INCIDENCIA);
 
     public PedidoService(PedidoRepositoryPort pedidoRepository,
                          TarifaDomicilioService tarifaDomicilioService,
@@ -410,45 +414,38 @@ public class PedidoService {
     public void cancelarPedido(Long pedidoId) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> {
-                    log.warn(
-                            "Pedido no encontrado al cancelar. pedidoId='{}'",
-                            pedidoId);
-                    return new NotFoundException(
-                            "Pedido no encontrado",
-                            "PEDIDO_NOT_FOUND");
+                    log.warn("Pedido no encontrado al cancelar. pedidoId='{}'", pedidoId);
+                    return new NotFoundException("Pedido no encontrado", "PEDIDO_NOT_FOUND");
                 });
 
         if (!PERMITIR_CANCELADO_DESDE.contains(pedido.getEstado())) {
             throw new BadRequestException(
                     "No se puede cancelar un pedido en el estado actual",
-                    "ESTADO_PEDIDO_INVALIDO",
-                    "estado");
+                    "ESTADO_PEDIDO_INVALIDO", "estado");
         }
 
         pedido.setEstado(EstadoPedido.CANCELADO);
+        Pedido saved = pedidoRepository.save(pedido);
 
+        // Siempre notificar al cliente — sin importar si tiene domiciliario
+        realtimePublisher.pedidoParaCliente(pedido.getClienteId(), toDTO(saved));
+        realtimePublisher.pedidoActualizado(toDTO(saved));
+
+        // Solo si tiene domiciliario asignado
         if (pedido.getDomiciliarioId() != null) {
             Usuario u = usuarioRepository.findById(pedido.getDomiciliarioId())
                     .orElseThrow(() -> {
-                        log.warn(
-                                "Domiciliario no encontrado al cancelar pedido. id='{}'",
-                                pedido.getDomiciliarioId());
-                        return new NotFoundException(
-                                "Domiciliario no encontrado",
-                                "DOMICILIARIO_NOT_FOUND");
+                        log.warn("Domiciliario no encontrado al cancelar pedido. id='{}'", pedido.getDomiciliarioId());
+                        return new NotFoundException("Domiciliario no encontrado", "DOMICILIARIO_NOT_FOUND");
                     });
 
             u.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
             u.setDisponibleDesde(LocalDateTime.now());
             usuarioRepository.save(u);
 
-            realtimePublisher.pedidoParaDelivery(pedido.getDomiciliarioId(), toDTO(pedido));
-            realtimePublisher.pedidoParaCliente(pedido.getClienteId(), toDTO(pedido));
+            realtimePublisher.pedidoParaDelivery(pedido.getDomiciliarioId(), toDTO(saved));
             realtimePublisher.deliveryActualizado(deliveryService.toDto(u));
         }
-
-        Pedido saved = pedidoRepository.save(pedido);
-        realtimePublisher.pedidoActualizado(toDTO(saved));
     }
 
     @Transactional
@@ -572,6 +569,18 @@ public class PedidoService {
 
         realtimePublisher.pedidoActualizado(toDTO(saved));
         realtimePublisher.pedidoParaCliente(pedido.getClienteId(), toDTO(saved));
+
+        if (pedido.getDomiciliarioId() != null) {
+            realtimePublisher.pedidoParaDelivery(pedido.getDomiciliarioId(), toDTO(saved));
+
+            Usuario domi = usuarioRepository.findById(pedido.getDomiciliarioId()).orElse(null);
+            if (domi != null) {
+                domi.setEstadoDelivery(EstadoDelivery.DISPONIBLE);
+                domi.setDisponibleDesde(LocalDateTime.now());
+                usuarioRepository.save(domi);
+                realtimePublisher.deliveryActualizado(deliveryService.toDto(domi));
+            }
+        }
 
         return toDTO(saved);
     }
