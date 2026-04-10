@@ -33,9 +33,11 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
+        // 🔥 Soporte para token por query (?token=xxx)
         if ((authHeader == null || authHeader.isBlank()) && request instanceof ServletServerHttpRequest sreq) {
             HttpServletRequest servletReq = sreq.getServletRequest();
             String tokenParam = servletReq.getParameter("token");
+
             if (tokenParam != null && !tokenParam.isBlank()) {
                 authHeader = "Bearer " + tokenParam;
             }
@@ -43,17 +45,21 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+
             if (jwtTokenProvider.validateToken(token)) {
                 Authentication auth = jwtTokenProvider.getAuthentication(token, userDetailsService);
 
+                // 🔥 Guardamos el Authentication completo
                 attributes.put("AUTH", auth);
 
-                auth.getAuthorities().forEach(a -> System.out.println("WS HANDSHAKE AUTH=" + a.getAuthority()));
-                return true;
+                System.out.println("✅ WS AUTH OK: " + auth.getName());
             }
+        } else {
+            System.out.println("⚠️ WS sin token (permitido)");
         }
 
-        return false;
+        // 🔥 IMPORTANTE: no bloquear conexión
+        return true;
     }
 
     @Override
