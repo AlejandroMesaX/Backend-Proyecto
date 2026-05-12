@@ -1,32 +1,60 @@
 package com.gofast.domicilios.application.service;
 
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import jakarta.mail.internet.MimeMessage;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final String apiKey;
+    private final String fromEmail;
+    private final RestTemplate restTemplate;
 
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public EmailService(
+            @Value("${resend.api.key:}") String apiKey,
+            @Value("${resend.from.email:onboarding@resend.dev}") String fromEmail) {
+        this.apiKey = apiKey;
+        this.fromEmail = fromEmail;
+        this.restTemplate = new RestTemplate();
     }
 
     public void enviarCodigoVerificacion(String destinatario, String nombre, String codigo) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new RuntimeException("API key de Resend no configurada");
+        }
+
+        String html = buildHtml(nombre, codigo);
+
+        Map<String, Object> body = Map.of(
+                "from", fromEmail,
+                "to", List.of(destinatario),
+                "subject", "GoFast — Tu código de verificación",
+                "html", html
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + apiKey);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "https://api.resend.com/emails",
+                    request,
+                    String.class
+            );
 
-            helper.setTo(destinatario);
-            helper.setSubject("GoFast — Tu código de verificación");
-            helper.setText(buildHtml(nombre, codigo), true);
-
-            mailSender.send(message);
+            if (response.getStatusCode() != HttpStatus.OK && response.getStatusCode() != HttpStatus.ACCEPTED) {
+                throw new RuntimeException("Error de Resend: " + response.getBody());
+            }
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo enviar el correo de verificación: " + e.getMessage());
+            throw new RuntimeException("No se pudo enviar el correo: " + e.getMessage());
         }
     }
 
