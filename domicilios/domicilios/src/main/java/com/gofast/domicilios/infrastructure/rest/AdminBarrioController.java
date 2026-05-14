@@ -2,13 +2,13 @@ package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.dto.ActualizarBarrioRequest;
 import com.gofast.domicilios.application.dto.CrearBarrioRequest;
-import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.service.BarrioService;
 import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.application.dto.BarrioDTO;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/barrios")
@@ -25,14 +25,12 @@ public class AdminBarrioController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<BarrioDTO>> listar(
+    public ResponseEntity<List<BarrioDTO>> listar(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) Integer comuna,
-            @RequestParam(required = false) Boolean activo,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(required = false) Boolean activo
     ) {
-        return ResponseEntity.ok(barrioService.listarBarrios(nombre, comuna, activo, page, size));
+        return ResponseEntity.ok(barrioService.listarBarrios(nombre, comuna, activo));
     }
 
     @PutMapping("/{barrioId}")

@@ -2,10 +2,6 @@ package com.gofast.domicilios.domain.repository;
 
 import com.gofast.domicilios.domain.model.EstadoPedido;
 import com.gofast.domicilios.domain.model.Pedido;
-import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +26,5 @@ public interface PedidoRepositoryPort {
     List<Pedido> findByDomiciliarioIdAndEstadoIn(Long domiciliarioId, List<EstadoPedido> estados);
 
     List<Pedido> findAll();
-
-    Page<Pedido> findAll(Specification<PedidoEntity> spec, Pageable pageable);
 
 }

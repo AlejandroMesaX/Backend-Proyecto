@@ -1,7 +1,6 @@
 package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.dto.EditarUsuarioRequest;
-import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.application.service.UsuarioService;
@@ -9,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/usuarios")
@@ -21,14 +21,12 @@ public class AdminUsuarioController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<UsuarioDTO>> listar(
+    public ResponseEntity<List<UsuarioDTO>> listar(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String rol,
-            @RequestParam(required = false) Boolean activo,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(required = false) Boolean activo
     ) {
-        return ResponseEntity.ok(usuarioService.listarUsuarios(nombre, rol, activo, page, size));
+        return ResponseEntity.ok(usuarioService.listarUsuarios(nombre, rol, activo));
     }
 
 

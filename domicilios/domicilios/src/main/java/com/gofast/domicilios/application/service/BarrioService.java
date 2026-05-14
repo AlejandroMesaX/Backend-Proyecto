@@ -2,7 +2,6 @@ package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.BarrioDTO;
 import com.gofast.domicilios.application.dto.CrearBarrioRequest;
-import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.domain.model.Barrio;
 import com.gofast.domicilios.domain.model.Comuna;
@@ -87,20 +86,6 @@ public class BarrioService {
                 .stream()
                 .map(this::toDTO)
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public PageResponse<BarrioDTO> listarBarrios(String nombre, Integer comunaNumero, Boolean activo, int page, int size) {
-        var result = barrioRepository.findByFiltros(
-                (nombre == null || nombre.isBlank()) ? null : nombre.trim(),
-                comunaNumero,
-                activo,
-                page,
-                size
-        );
-
-        List<BarrioDTO> content = result.getContent().stream().map(this::toDTO).toList();
-        return PageResponse.of(content, result.getNumber(), result.getSize(), result.getTotalElements());
     }
 
     @Transactional

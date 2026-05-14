@@ -1,6 +1,5 @@
 package com.gofast.domicilios.infrastructure.rest;
 
-import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.application.dto.ReportarIncidenciaRequest;
 import com.gofast.domicilios.application.service.PedidoService;
@@ -9,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -23,14 +21,12 @@ public class DomiciliarioPedidoController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<PedidoDTO>> misPedidos(
+    public ResponseEntity<List<PedidoDTO>> misPedidos(
             Authentication authentication,
-            @RequestParam(required = false) EstadoPedido estado,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(required = false) EstadoPedido estado
     ) {
         return ResponseEntity.ok(
-                pedidoService.listarPedidosDelDomiciliario(authentication, estado, page, size)
+                pedidoService.listarPedidosDelDomiciliario(authentication, estado)
         );
     }
 
@@ -56,30 +52,12 @@ public class DomiciliarioPedidoController {
     }
 
     @GetMapping("/me/entregados")
-    public ResponseEntity<PageResponse<PedidoDTO>> historialEntregados(
-            Authentication authentication,
-            @RequestParam(required = false) String desde,
-            @RequestParam(required = false) String hasta,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
-    ) {
-        LocalDate desdeDate = (desde == null || desde.isBlank()) ? null : LocalDate.parse(desde);
-        LocalDate hastaDate = (hasta == null || hasta.isBlank()) ? null : LocalDate.parse(hasta);
-        return ResponseEntity.ok(pedidoService.misPedidosEntregadosComoDomiciliario(authentication, desdeDate, hastaDate, page, size));
+    public ResponseEntity<List<PedidoDTO>> historialEntregados(Authentication authentication) {
+        return ResponseEntity.ok(pedidoService.misPedidosEntregadosComoDomiciliario(authentication));
     }
 
     @GetMapping("/me/activos")
     public ResponseEntity<List<PedidoDTO>> pedidosActivos(Authentication authentication) {
         return ResponseEntity.ok(pedidoService.misPedidosActivos(authentication));
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<PageResponse<PedidoDTO>> misPedidos(
-            Authentication authentication,
-            @RequestParam(required = false) String estado,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(pedidoService.listarPedidosDelDomiciliario(authentication, null, page, size));
     }
 }

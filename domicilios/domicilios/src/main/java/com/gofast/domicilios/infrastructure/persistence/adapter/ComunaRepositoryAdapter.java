@@ -1,8 +1,6 @@
 package com.gofast.domicilios.infrastructure.persistence.adapter;
 
 import org.springframework.stereotype.Component;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.domain.repository.ComunaRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.ComunaEntity;
@@ -37,12 +35,6 @@ public class ComunaRepositoryAdapter implements ComunaRepositoryPort {
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Page<Comuna> findAll(int page, int size) {
-        return comunaJpaRepository.findAll(PageRequest.of(page, size))
-                .map(this::toDomain);
     }
 
     @Override
