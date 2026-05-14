@@ -1,6 +1,7 @@
 package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.dto.CrearPedidoRequest;
+import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.application.service.PedidoService;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
@@ -9,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/cliente/pedidos")
@@ -28,24 +28,19 @@ public class ClientePedidoController {
         return ResponseEntity.ok(creado);
     }
 
-    @GetMapping("/mios")
-    public ResponseEntity<List<PedidoDTO>> listarMisPedidos(
-            @AuthenticationPrincipal CustomUserDetails currentUser
+    @GetMapping
+    public ResponseEntity<PageResponse<PedidoDTO>> misPedidos(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestParam(required = false) String desde,
+            @RequestParam(required = false) String hasta,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         Long clienteId = currentUser.getId();
-        List<PedidoDTO> pedidos = pedidoService.listarPorCliente(clienteId);
-        return ResponseEntity.ok(pedidos);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<PedidoDTO>> misPedidos(
-            @RequestParam(required = false) String desde,
-            @RequestParam(required = false) String hasta
-    ) {
         LocalDate desdeDate = (desde == null || desde.isBlank()) ? null : LocalDate.parse(desde);
         LocalDate hastaDate = (hasta == null || hasta.isBlank()) ? null : LocalDate.parse(hasta);
 
-        return ResponseEntity.ok(pedidoService.listarPedidosDelCliente(desdeDate, hastaDate));
+        return ResponseEntity.ok(pedidoService.listarPedidosDelCliente(clienteId, desdeDate, hastaDate, page, size));
     }
 
     @PatchMapping("/{id}")

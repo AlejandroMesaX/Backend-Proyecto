@@ -1,12 +1,13 @@
 package com.gofast.domicilios.infrastructure.rest;
 
 import com.gofast.domicilios.application.dto.AsignarDomiciliarioRequest;
+import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.dto.PedidoDTO;
 import com.gofast.domicilios.application.service.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/admin/pedidos")
@@ -19,12 +20,18 @@ public class AdminPedidoController {
         }
 
         @GetMapping
-        public ResponseEntity<List<PedidoDTO>> listar(
+        public ResponseEntity<PageResponse<PedidoDTO>> listar(
             @RequestParam(required = false) Long clienteId,
             @RequestParam(required = false) Long domiciliarioId,
-            @RequestParam(required = false) String estado
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String desde,
+            @RequestParam(required = false) String hasta,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
         ) {
-        return ResponseEntity.ok(pedidoService.listarPedidos(clienteId, domiciliarioId, estado));
+            LocalDate desdeDate = (desde == null || desde.isBlank()) ? null : LocalDate.parse(desde);
+            LocalDate hastaDate = (hasta == null || hasta.isBlank()) ? null : LocalDate.parse(hasta);
+            return ResponseEntity.ok(pedidoService.listarPedidos(clienteId, domiciliarioId, estado, desdeDate, hastaDate, page, size));
         }
 
     @DeleteMapping("/{id}")

@@ -3,6 +3,7 @@ package com.gofast.domicilios.application.service;
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.domain.repository.ComunaRepositoryPort;
 import com.gofast.domicilios.application.dto.CrearComunaRequest;
+import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.exception.BadRequestException;
 import com.gofast.domicilios.application.dto.EditarComunaRequest;
 import com.gofast.domicilios.application.exception.NotFoundException;
@@ -25,6 +26,12 @@ public class ComunaService {
     @Transactional(readOnly = true)
     public List<Comuna> listarTodas() {
         return comunaRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<Comuna> listarTodas(int page, int size) {
+        var result = comunaRepository.findAll(page, size);
+        return PageResponse.of(result.getContent(), result.getNumber(), result.getSize(), result.getTotalElements());
     }
 
     @Transactional

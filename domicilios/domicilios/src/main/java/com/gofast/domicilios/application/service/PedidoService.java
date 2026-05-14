@@ -13,6 +13,10 @@ import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -175,6 +179,34 @@ public class PedidoService {
     }
 
     @Transactional(readOnly = true)
+    public PageResponse<PedidoDTO> listarPedidos(Long clienteId, Long domiciliarioId, String estado, LocalDate desde, LocalDate hasta, int page, int size) {
+        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+
+        if (clienteId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("clienteId"), clienteId));
+        }
+        if (domiciliarioId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("domiciliarioId"), domiciliarioId));
+        }
+        if (estado != null && !estado.isBlank()) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("estado"), EstadoPedido.valueOf(estado)));
+        }
+        if (desde != null) {
+            LocalDateTime desdeDT = desde.atStartOfDay();
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("fechaCreacion"), desdeDT));
+        }
+        if (hasta != null) {
+            LocalDateTime hastaExclusivo = hasta.plusDays(1).atStartOfDay();
+            spec = spec.and((root, query, cb) -> cb.lessThan(root.get("fechaCreacion"), hastaExclusivo));
+        }
+
+        Page<Pedido> result = pedidoRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion")));
+
+        List<PedidoDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return PageResponse.of(content, result.getNumber(), result.getSize(), result.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
     public List<PedidoDTO> misPedidosEntregadosComoDomiciliario(Authentication authentication) {
         if (authentication == null || authentication.getName() == null) {
             throw new ForbiddenException(
@@ -202,6 +234,41 @@ public class PedidoService {
                 .stream()
                 .map(this::toDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<PedidoDTO> misPedidosEntregadosComoDomiciliario(Authentication authentication, LocalDate desde, LocalDate hasta, int page, int size) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new ForbiddenException("No autenticado", "NO_AUTENTICADO");
+        }
+
+        Usuario u = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ForbiddenException("Usuario no encontrado", "USUARIO_NOT_FOUND"));
+
+        if (u.getRol() != Rol.DELIVERY) {
+            throw new ForbiddenException("Solo domiciliarios pueden realizar esta acción", "ROL_NO_PERMITIDO");
+        }
+        if (!u.isActivo()) {
+            throw new ForbiddenException("Usuario inactivo", "USUARIO_INACTIVO");
+        }
+
+        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("domiciliarioId"), u.getId()));
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("estado"), EstadoPedido.ENTREGADO));
+
+        if (desde != null) {
+            LocalDateTime desdeDT = desde.atStartOfDay();
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("fechaCreacion"), desdeDT));
+        }
+        if (hasta != null) {
+            LocalDateTime hastaExclusivo = hasta.plusDays(1).atStartOfDay();
+            spec = spec.and((root, query, cb) -> cb.lessThan(root.get("fechaCreacion"), hastaExclusivo));
+        }
+
+        Page<Pedido> result = pedidoRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion")));
+
+        List<PedidoDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return PageResponse.of(content, result.getNumber(), result.getSize(), result.getTotalElements());
     }
 
     @Transactional
@@ -326,6 +393,34 @@ public class PedidoService {
                 .stream()
                 .map(this::toDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<PedidoDTO> listarPedidosDelDomiciliario(Authentication authentication, EstadoPedido estado, int page, int size) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new ForbiddenException("No autenticado", "NO_AUTENTICADO");
+        }
+
+        Usuario u = usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ForbiddenException("Usuario no encontrado", "USUARIO_NOT_FOUND"));
+
+        if (u.getRol() != Rol.DELIVERY) {
+            throw new ForbiddenException("Solo domiciliarios pueden ver esta ruta", "ROL_NO_PERMITIDO");
+        }
+        if (!u.isActivo()) {
+            throw new ForbiddenException("Usuario inactivo", "USUARIO_INACTIVO");
+        }
+
+        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("domiciliarioId"), u.getId()));
+        if (estado != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("estado"), estado));
+        }
+
+        Page<Pedido> result = pedidoRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion")));
+
+        List<PedidoDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return PageResponse.of(content, result.getNumber(), result.getSize(), result.getTotalElements());
     }
 
     @Transactional
@@ -607,6 +702,27 @@ public class PedidoService {
                 .stream()
                 .map(this::toDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<PedidoDTO> listarPedidosDelCliente(Long clienteId, LocalDate desde, LocalDate hasta, int page, int size) {
+        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+
+        spec = spec.and((root, query, cb) -> cb.equal(root.get("clienteId"), clienteId));
+
+        if (desde != null) {
+            LocalDateTime desdeDT = desde.atStartOfDay();
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("fechaCreacion"), desdeDT));
+        }
+        if (hasta != null) {
+            LocalDateTime hastaExclusivo = hasta.plusDays(1).atStartOfDay();
+            spec = spec.and((root, query, cb) -> cb.lessThan(root.get("fechaCreacion"), hastaExclusivo));
+        }
+
+        Page<Pedido> result = pedidoRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion")));
+
+        List<PedidoDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return PageResponse.of(content, result.getNumber(), result.getSize(), result.getTotalElements());
     }
 
     private PedidoDTO toDTO(Pedido p) {

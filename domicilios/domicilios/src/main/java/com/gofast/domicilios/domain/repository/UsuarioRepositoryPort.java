@@ -2,6 +2,7 @@ package com.gofast.domicilios.domain.repository;
 
 import com.gofast.domicilios.domain.model.Rol;
 import com.gofast.domicilios.domain.model.Usuario;
+import org.springframework.data.domain.Page;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,8 @@ public interface UsuarioRepositoryPort {
     List<Usuario> findAll();
 
     List<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo);
+
+    Page<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo, int page, int size);
 
     List<Usuario> findDeliveryDisponiblesFIFO();
 

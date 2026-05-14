@@ -2,6 +2,7 @@ package com.gofast.domicilios.application.service;
 
 import com.gofast.domicilios.application.dto.EditarUsuarioRequest;
 import com.gofast.domicilios.application.dto.LoginResponse;
+import com.gofast.domicilios.application.dto.PageResponse;
 import com.gofast.domicilios.application.dto.RegisterUsuarioRequest;
 import com.gofast.domicilios.application.dto.UsuarioDTO;
 import com.gofast.domicilios.application.exception.ForbiddenException;
@@ -267,6 +268,32 @@ public class UsuarioService {
                 .stream()
                 .map(this::toDTO)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<UsuarioDTO> listarUsuarios(String nombre, String rol, Boolean activo, int page, int size) {
+        Rol rolEnum = null;
+        if (rol != null && !rol.isBlank()) {
+            try {
+                rolEnum = Rol.valueOf(rol.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException(
+                        "Rol inválido",
+                        "ROL_INVALIDO",
+                        "rol");
+            }
+        }
+
+        var result = usuarioRepository.findByFiltros(
+                (nombre == null || nombre.isBlank()) ? null : nombre.trim(),
+                rolEnum,
+                activo,
+                page,
+                size
+        );
+
+        List<UsuarioDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return PageResponse.of(content, result.getNumber(), result.getSize(), result.getTotalElements());
     }
 
     @Transactional(readOnly = true)

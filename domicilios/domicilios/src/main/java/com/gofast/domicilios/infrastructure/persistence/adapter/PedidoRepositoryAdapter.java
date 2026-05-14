@@ -5,6 +5,8 @@ import com.gofast.domicilios.domain.model.Pedido;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.PedidoJpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
@@ -135,6 +137,12 @@ public class PedidoRepositoryAdapter implements PedidoRepositoryPort {
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Pedido> findAll(Specification<PedidoEntity> spec, Pageable pageable) {
+        return jpa.findAll((Specification<PedidoEntity>) spec, pageable)
+                .map(this::toDomain);
     }
 
     @Override

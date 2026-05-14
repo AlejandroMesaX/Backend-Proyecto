@@ -4,11 +4,11 @@ import com.gofast.domicilios.application.service.ComunaService;
 import com.gofast.domicilios.domain.model.Comuna;
 import com.gofast.domicilios.application.dto.CrearComunaRequest;
 import com.gofast.domicilios.application.dto.EditarComunaRequest;
+import com.gofast.domicilios.application.dto.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/comunas")
@@ -20,8 +20,11 @@ public class AdminComunaController {
     }
 
     @GetMapping
-    public List<Comuna> listarTodas() {
-        return comunaService.listarTodas();
+    public ResponseEntity<PageResponse<Comuna>> listarTodas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(comunaService.listarTodas(page, size));
     }
 
     @PostMapping

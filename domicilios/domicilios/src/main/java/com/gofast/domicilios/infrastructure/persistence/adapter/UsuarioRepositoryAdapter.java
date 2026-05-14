@@ -6,6 +6,8 @@ import com.gofast.domicilios.infrastructure.persistence.entity.UsuarioEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.UsuarioJpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import com.gofast.domicilios.domain.model.Rol;
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +77,36 @@ public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Usuario> findByFiltros(String nombre, Rol rol, Boolean activo, int page, int size) {
+        Specification<UsuarioEntity> spec =
+                (root, query, cb) -> cb.conjunction();
+
+        if (nombre != null && !nombre.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(
+                            cb.lower(root.get("nombre")),
+                            "%" + nombre.toLowerCase() + "%"
+                    )
+            );
+        }
+
+        if (rol != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("rol"), rol)
+            );
+        }
+
+        if (activo != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("activo"), activo)
+            );
+        }
+
+        return jpa.findAll(spec, PageRequest.of(page, size))
+                .map(this::toDomain);
     }
 
     @Override

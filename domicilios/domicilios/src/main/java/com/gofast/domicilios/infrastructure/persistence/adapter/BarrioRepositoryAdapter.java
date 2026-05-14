@@ -8,6 +8,8 @@ import com.gofast.domicilios.infrastructure.persistence.entity.ComunaEntity;
 import com.gofast.domicilios.infrastructure.persistence.jpa.BarrioJpaRepository;
 import com.gofast.domicilios.infrastructure.persistence.jpa.ComunaJpaRepository;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
@@ -92,6 +94,33 @@ public class BarrioRepositoryAdapter implements BarrioRepositoryPort {
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Barrio> findByFiltros(String nombre, Integer comunaNumero, Boolean activo, int page, int size) {
+        Specification<BarrioEntity> spec = (root, query, cb) -> cb.conjunction();
+
+        if (nombre != null && !nombre.isBlank()) {
+            String like = "%" + nombre.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("nombre")), like)
+            );
+        }
+
+        if (comunaNumero != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("comuna").get("numero"), comunaNumero)
+            );
+        }
+
+        if (activo != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("activo"), activo)
+            );
+        }
+
+        return barrioJpaRepository.findAll(spec, PageRequest.of(page, size))
+                .map(this::toDomain);
     }
 
     @Override
