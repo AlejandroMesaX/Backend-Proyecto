@@ -9,6 +9,7 @@ import com.gofast.domicilios.domain.repository.BarrioRepositoryPort;
 import com.gofast.domicilios.domain.repository.DireccionRepositoryPort;
 import com.gofast.domicilios.domain.repository.PedidoRepositoryPort;
 import com.gofast.domicilios.domain.repository.UsuarioRepositoryPort;
+import com.gofast.domicilios.infrastructure.persistence.entity.PedidoEntity;
 import com.gofast.domicilios.infrastructure.realtime.PedidoRealtimePublisher;
 import com.gofast.domicilios.infrastructure.realtime.RealtimePublisher;
 import com.gofast.domicilios.infrastructure.security.CustomUserDetails;
@@ -180,7 +181,7 @@ public class PedidoService {
 
     @Transactional(readOnly = true)
     public PageResponse<PedidoDTO> listarPedidos(Long clienteId, Long domiciliarioId, String estado, LocalDate desde, LocalDate hasta, int page, int size) {
-        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
 
         if (clienteId != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("clienteId"), clienteId));
@@ -252,7 +253,7 @@ public class PedidoService {
             throw new ForbiddenException("Usuario inactivo", "USUARIO_INACTIVO");
         }
 
-        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
         spec = spec.and((root, query, cb) -> cb.equal(root.get("domiciliarioId"), u.getId()));
         spec = spec.and((root, query, cb) -> cb.equal(root.get("estado"), EstadoPedido.ENTREGADO));
 
@@ -411,7 +412,7 @@ public class PedidoService {
             throw new ForbiddenException("Usuario inactivo", "USUARIO_INACTIVO");
         }
 
-        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
         spec = spec.and((root, query, cb) -> cb.equal(root.get("domiciliarioId"), u.getId()));
         if (estado != null) {
             spec = spec.and((root, query, cb) -> cb.equal(root.get("estado"), estado));
@@ -706,7 +707,7 @@ public class PedidoService {
 
     @Transactional(readOnly = true)
     public PageResponse<PedidoDTO> listarPedidosDelCliente(Long clienteId, LocalDate desde, LocalDate hasta, int page, int size) {
-        Specification<Pedido> spec = (root, query, cb) -> cb.conjunction();
+        Specification<PedidoEntity> spec = (root, query, cb) -> cb.conjunction();
 
         spec = spec.and((root, query, cb) -> cb.equal(root.get("clienteId"), clienteId));
 
